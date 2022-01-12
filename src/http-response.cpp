@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include "libs/cJSON.h"
 #include "libs/Restart.h"
 
 
@@ -29,7 +30,7 @@ int handleClient(int socket, char* response, int size)
     if ((parse_requestline(response, size, &command, &server, &path, &protocol, &port)) == -1) 
     {
         char* body = (char*) malloc(LINE_MAX_SIZE * sizeof(char));
-        strcpy(body, "400 Bad Request. Please provide a valid request line: [HTTP-Method] [PATH] [PROTOCOL]\n");
+        strcpy(body, "400 Bad Request: Please provide a valid request line: [HTTP-Method] [PATH] [PROTOCOL]\n");
         
         fprintf(stderr, "[%ld] Failed to parse received HTTP header. Sending HTTP Response: 400 Bad Request\n", (long)getpid());
         sendHttpResponse(socket, 400, CONNECTION_CLOSE, TYPE_HTML, &body);
@@ -48,24 +49,124 @@ int handleClient(int socket, char* response, int size)
     // ==================================================================================================== 
     // API 
     // ==================================================================================================== 
-    if ((strncmp(path, "/api/athlete/", 13) == 0) && (strlen(path) > 13) && (strcmp(command, "GET") == 0) )
+    if ((strncmp(path, "/api/athlete/", 13) == 0) && (strlen(path) >= 13) && (strcmp(command, "GET") == 0) )
     {
-        int fiscode = atoi(&path[13]);
-        if (fiscode <= 0) {
-            // TODO: Send 40x Client Error Response
-            fprintf(stderr, "[%ld] Api call %s failed: Invalid fiscode parameter\n", (long)getpid(), path);
+        // Validate fiscode parameter
+        int fiscode;
+        (strlen(path) <= 13) ? fiscode = 0 : fiscode = atoi(&path[13]);
+        if (fiscode <= 0) 
+        {
+            char* body = (char*) malloc(LINE_MAX_SIZE * sizeof(char));
+            strcpy(body, "400 Bad Request: Invalid fiscode parameter\n");
+
+            fprintf(stderr, "[%ld] Api call %s failed: Invalid fiscode parameter. Sending HTTP Response: 400 Bad Request\n", (long)getpid(), path);
+            sendHttpResponse(socket, 400, CONNECTION_CLOSE, TYPE_HTML, &body);
+
+            if (body != 0) free(body);
+            
             return -1;
         }
 
-        // 
-        // * Open athlete file
-        // * Try to find the athlete with the given fiscode
-        // * Load that athlete into memory
-        // * Convert to json format (if not json already)
-        // * Create http header
-        // * Combine header with json data
-        // * Send back to athlete
-        //
+        // Load the db file that stores all the atheltes
+        char file[] = "./db/athletes.json";
+        char* buffer = 0;
+        int status_code = 500;
+        char* error_message = (char*) malloc(LINE_MAX_SIZE * sizeof(char));
+
+        if (loadResource(socket, file, &buffer, &status_code, &error_message) == -1) 
+        {
+            char* body = (char*) malloc(LINE_MAX_SIZE * sizeof(char));
+            if (error_message != 0)
+                strcpy(body, error_message);
+            
+            fprintf(stderr, "[%ld] Sending HTTP Response %d to client\n", (long)getpid(), status_code);
+            sendHttpResponse(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, &body);
+            
+            if (body != 0) free(body);
+            if (error_message != 0) free(error_message); 
+            if (buffer != 0) free(buffer);
+            
+            return -1;
+        }
+
+
+        // Convert the buffer to json 
+        cJSON* json = cJSON_Parse(buffer);
+        if (buffer != 0) free(buffer);
+        
+        if (json == NULL) 
+        {
+            const char *error_ptr = cJSON_GetErrorPtr();
+            if (error_ptr != NULL)
+                fprintf(stderr, "[%ld] Failed to parse JSON file. Error before: %s\n", (long)getpid(), error_ptr);
+            else
+                fprintf(stderr, "[%ld] Failed to parse JSON file\n", (long)getpid());
+
+            status_code = 500;
+            char* body = (char*) malloc(LINE_MAX_SIZE * sizeof(char));
+            strcpy(body, "500 Internal Server Error: Failed to parse the file to JSON\n");
+            
+            fprintf(stderr, "[%ld] Sending HTTP Response %d to client\n", (long)getpid(), status_code);
+            sendHttpResponse(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, &body);
+            
+            if (body != 0) free(body);
+            cJSON_Delete(json);
+        
+            return -1;
+        }
+
+
+        // Try to find the athlete with the given fiscode
+        char* result = NULL;
+        const cJSON* athlete = NULL;
+        const cJSON* athletes = NULL;
+        athletes = cJSON_GetObjectItemCaseSensitive(json, "athletes");
+
+        // TODO: Check if athlete and atheltes needs to be freed individually
+        cJSON_ArrayForEach(athlete, athletes) 
+        {
+            cJSON* fiscode_json = cJSON_GetObjectItemCaseSensitive(athlete, "fiscode");
+            if (cJSON_IsString(fiscode_json)) 
+            {
+                // TODO: replace array index 13 with a constant
+                if (strcmp(fiscode_json->valuestring, &(path[13])) == 0) 
+                {
+                    result = cJSON_Print(athlete);
+                    break;
+                }
+            }
+        }
+
+        if (result == NULL) 
+        {
+            fprintf(stderr, "[%ld] Could not find the athlete with the given fiscode\n", (long)getpid());
+            
+            status_code = 404;
+            char* body = (char*) malloc(LINE_MAX_SIZE * sizeof(char));
+            strcpy(body, "404 Not Found: Could not find the athlete with the given fiscode\n");
+            
+            fprintf(stderr, "[%ld] Sending HTTP Response %d to client\n", (long)getpid(), status_code);
+            sendHttpResponse(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, &body);
+            
+            if (body != 0) free(body);
+            cJSON_Delete(json);
+        
+            return -1;
+        }
+
+        // Send the athlete 
+        if (sendHttpResponse(socket, 200, CONNECTION_CLOSE, TYPE_JSON, &result) == -1)
+        {
+            if (result != 0) free(result);
+            cJSON_Delete(json);
+            return -1;
+        } 
+
+        fprintf(stderr, "[%ld] Successfully sent HTTP Response to client\n", (long)getpid());
+        if (result != 0) free(result);
+        cJSON_Delete(json);
+        
+        return 0;    
     }
     
 
@@ -74,11 +175,20 @@ int handleClient(int socket, char* response, int size)
     // ==================================================================================================== 
     if (strcmp(command, "GET") == 0)
     {
+        // Create the full filepath for the requested file
+        char filepath[strlen(path) + (32 * sizeof(char))];
+        strcpy(filepath, RESOURCE_PATH);
+        if (path == 0 || (strlen(path) == 1 && path[0] == '/'))
+            strcat(filepath, DEFAULT_FILE);
+        else
+            strcat(filepath, path);
+       
+
         char* buffer = 0;
         int status_code = 500;
         char* error_message = (char*) malloc(LINE_MAX_SIZE * sizeof(char));
-        
-        if (loadResource(socket, path, &buffer, &status_code, &error_message) == -1) 
+
+        if (loadResource(socket, filepath, &buffer, &status_code, &error_message) == -1) 
         {
             char* body = (char*) malloc(LINE_MAX_SIZE * sizeof(char));
             if (error_message != 0)
@@ -92,6 +202,7 @@ int handleClient(int socket, char* response, int size)
             if (buffer != 0) free(buffer);
             return -1;
         }
+
 
         if (sendHttpResponse(socket, 200, CONNECTION_CLOSE, TYPE_HTML, &buffer) == -1) 
         {
@@ -251,13 +362,12 @@ int sendHttpResponse(int socket, int statuscode, const char* connection, const c
 
 /**
  * ----------------------------------------------------------------------------
- * Load the file that is requested in the paremter path.
- * The content of the file will allocated dynamically and stored in the buffer parameter. This needs to be manually freed later.
- * The full relative path to where the file is stored will be prepended to path inside this function.
+ * Load the resource that is requested in the paremter path.
+ * The content of the file will be allocated dynamically and stored in the buffer parameter. This needs to be manually freed later.
  * If the function fails, it will print an error message, store the specific error inside the parameter error_message, and return -1.
  *
  * socket: The file descriptor for the socket used to communicate with the connected client. 
- * path: The requested resource. Should be a null terminated string set by the parse_requestline function.
+ * path: The requested resource. Should be a null terminated string and be a full path relative to the executable.
  * buffer: A pointer to the buffer that will store the content of the loaded file. Should be null when calling this function, and needs to be manually freed later.
  * status_code: The status code to send back with the Http Response if this function fails.
  * error_message: Needs to have been allocated before calling this function with atleast a size of LINE_MAX_SIZE. 
@@ -269,22 +379,16 @@ int sendHttpResponse(int socket, int statuscode, const char* connection, const c
  */
 int loadResource(int socket, char* path, char** buffer, int* status_code, char** error_message)
 {
-    // Create the full realtive file path for the requested file
-    char filepath[strlen(path) + (32 * sizeof(char))];
-    strcpy(filepath, RELATIVE_PATH);
-    if (path == 0 || (strlen(path) == 1 && path[0] == '/'))
-        strcat(filepath, DEFAULT_FILE);
-    else
-        strcat(filepath, path);
-
     int fd; 
-    if ((fd = r_open2(filepath, O_RDONLY)) == -1) 
+    if ((fd = r_open2(path, O_RDONLY)) == -1) 
     {
         // Try to append .html if opening the file failed
-        strcat(filepath, ".html");
-        if ((fd = r_open2(filepath, O_RDONLY)) == -1) 
+        char newpath[strlen(path) + 8];
+        strcpy(newpath, path);
+        strcat(newpath, ".html");
+        if ((fd = r_open2(newpath, O_RDONLY)) == -1) 
         {
-            fprintf(stderr, "[%ld] Failed to open %s: %s\n", (long)getpid(), filepath, strerror(errno));
+            fprintf(stderr, "[%ld] Failed to open %s: %s\n", (long)getpid(), path, strerror(errno));
             
             *status_code = 404;
             if (*error_message != 0)

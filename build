@@ -2,7 +2,7 @@
 
 TARGET="backend"
 
-LIBRARIES="./src/libs/Restart.cpp ./src/libs/uici.cpp"
+LIBRARIES="./src/libs/Restart.cpp ./src/libs/uici.cpp ./src/libs/cJSON.cpp"
 FILES="./src/main.cpp ./src/http-response.cpp ${LIBRARIES}"
 
 CFLAGS=""

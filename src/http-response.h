@@ -1,7 +1,7 @@
 
 #pragma once
 
-#define RELATIVE_PATH "./resources"  
+#define RESOURCE_PATH "./resources"  
 #define DEFAULT_FILE "/index.html"
 #define LINE_MAX_SIZE 256
 #define CONNECTION_CLOSE "close"
