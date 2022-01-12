@@ -1,0 +1,11 @@
+
+
+TARGET="backend"
+
+LIBRARIES="./src/libs/Restart.cpp ./src/libs/uici.cpp"
+FILES="./src/main.cpp ./src/http-response.cpp ${LIBRARIES}"
+
+CFLAGS=""
+
+g++ ${CFLAGS} ${FILES} -o ${TARGET}
+
