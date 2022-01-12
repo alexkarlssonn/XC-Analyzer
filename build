@@ -2,10 +2,10 @@
 
 TARGET="backend"
 
-LIBRARIES="./src/libs/Restart.cpp ./src/libs/uici.cpp ./src/libs/cJSON.cpp"
-FILES="./src/main.cpp ./src/http-response.cpp ${LIBRARIES}"
+LIBS="./src/libs/Restart.cpp ./src/libs/uici.cpp ./src/libs/cJSON.cpp"
+FILES="./src/main.cpp ./src/http-response.cpp ./src/api/athletes.cpp"
 
 CFLAGS=""
 
-g++ ${CFLAGS} ${FILES} -o ${TARGET}
+g++ ${CFLAGS} ${FILES} ${LIBS} -o ${TARGET}
 

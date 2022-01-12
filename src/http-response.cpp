@@ -6,7 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "libs/cJSON.h"
+#include <unistd.h>
+#include "./api/athletes.h"
 #include "libs/Restart.h"
 
 
@@ -45,15 +46,21 @@ int handleClient(int socket, char* response, int size)
     else
         fprintf(stderr, "[%ld] Received client request with unknown protocol: %s %s %s\n", (long)getpid(), command, path, protocol);
 
-    
+   
+    // List of API calls
+    char GET_ATHLETE[] = "/api/athlete/";
+    int GET_ATHLETE_SIZE = strlen(GET_ATHLETE);
+
+
     // ==================================================================================================== 
-    // API 
+    // API - Get athlete by fiscode 
     // ==================================================================================================== 
-    if ((strncmp(path, "/api/athlete/", 13) == 0) && (strlen(path) >= 13) && (strcmp(command, "GET") == 0) )
+    if ((strcmp(command, "GET") == 0) && 
+        (strncmp(path, GET_ATHLETE, GET_ATHLETE_SIZE) == 0) && 
+        (strlen(path) >= GET_ATHLETE_SIZE))
     {
-        // Validate fiscode parameter
         int fiscode;
-        (strlen(path) <= 13) ? fiscode = 0 : fiscode = atoi(&path[13]);
+        (strlen(path) <= GET_ATHLETE_SIZE) ? fiscode = 0 : fiscode = atoi(&path[GET_ATHLETE_SIZE]);
         if (fiscode <= 0) 
         {
             char* body = (char*) malloc(LINE_MAX_SIZE * sizeof(char));
@@ -62,111 +69,11 @@ int handleClient(int socket, char* response, int size)
             fprintf(stderr, "[%ld] Api call %s failed: Invalid fiscode parameter. Sending HTTP Response: 400 Bad Request\n", (long)getpid(), path);
             sendHttpResponse(socket, 400, CONNECTION_CLOSE, TYPE_HTML, &body);
 
-            if (body != 0) free(body);
-            
+            if (body != 0) free(body);            
             return -1;
         }
 
-        // Load the db file that stores all the atheltes
-        char file[] = "./db/athletes.json";
-        char* buffer = 0;
-        int status_code = 500;
-        char* error_message = (char*) malloc(LINE_MAX_SIZE * sizeof(char));
-
-        if (loadResource(socket, file, &buffer, &status_code, &error_message) == -1) 
-        {
-            char* body = (char*) malloc(LINE_MAX_SIZE * sizeof(char));
-            if (error_message != 0)
-                strcpy(body, error_message);
-            
-            fprintf(stderr, "[%ld] Sending HTTP Response %d to client\n", (long)getpid(), status_code);
-            sendHttpResponse(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, &body);
-            
-            if (body != 0) free(body);
-            if (error_message != 0) free(error_message); 
-            if (buffer != 0) free(buffer);
-            
-            return -1;
-        }
-
-
-        // Convert the buffer to json 
-        cJSON* json = cJSON_Parse(buffer);
-        if (buffer != 0) free(buffer);
-        
-        if (json == NULL) 
-        {
-            const char *error_ptr = cJSON_GetErrorPtr();
-            if (error_ptr != NULL)
-                fprintf(stderr, "[%ld] Failed to parse JSON file. Error before: %s\n", (long)getpid(), error_ptr);
-            else
-                fprintf(stderr, "[%ld] Failed to parse JSON file\n", (long)getpid());
-
-            status_code = 500;
-            char* body = (char*) malloc(LINE_MAX_SIZE * sizeof(char));
-            strcpy(body, "500 Internal Server Error: Failed to parse the file to JSON\n");
-            
-            fprintf(stderr, "[%ld] Sending HTTP Response %d to client\n", (long)getpid(), status_code);
-            sendHttpResponse(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, &body);
-            
-            if (body != 0) free(body);
-            cJSON_Delete(json);
-        
-            return -1;
-        }
-
-
-        // Try to find the athlete with the given fiscode
-        char* result = NULL;
-        const cJSON* athlete = NULL;
-        const cJSON* athletes = NULL;
-        athletes = cJSON_GetObjectItemCaseSensitive(json, "athletes");
-
-        // TODO: Check if athlete and atheltes needs to be freed individually
-        cJSON_ArrayForEach(athlete, athletes) 
-        {
-            cJSON* fiscode_json = cJSON_GetObjectItemCaseSensitive(athlete, "fiscode");
-            if (cJSON_IsString(fiscode_json)) 
-            {
-                // TODO: replace array index 13 with a constant
-                if (strcmp(fiscode_json->valuestring, &(path[13])) == 0) 
-                {
-                    result = cJSON_Print(athlete);
-                    break;
-                }
-            }
-        }
-
-        if (result == NULL) 
-        {
-            fprintf(stderr, "[%ld] Could not find the athlete with the given fiscode\n", (long)getpid());
-            
-            status_code = 404;
-            char* body = (char*) malloc(LINE_MAX_SIZE * sizeof(char));
-            strcpy(body, "404 Not Found: Could not find the athlete with the given fiscode\n");
-            
-            fprintf(stderr, "[%ld] Sending HTTP Response %d to client\n", (long)getpid(), status_code);
-            sendHttpResponse(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, &body);
-            
-            if (body != 0) free(body);
-            cJSON_Delete(json);
-        
-            return -1;
-        }
-
-        // Send the athlete 
-        if (sendHttpResponse(socket, 200, CONNECTION_CLOSE, TYPE_JSON, &result) == -1)
-        {
-            if (result != 0) free(result);
-            cJSON_Delete(json);
-            return -1;
-        } 
-
-        fprintf(stderr, "[%ld] Successfully sent HTTP Response to client\n", (long)getpid());
-        if (result != 0) free(result);
-        cJSON_Delete(json);
-        
-        return 0;    
+        return api_getAthlete(socket, &(path[GET_ATHLETE_SIZE]));
     }
     
 
@@ -392,7 +299,7 @@ int loadResource(int socket, char* path, char** buffer, int* status_code, char**
             
             *status_code = 404;
             if (*error_message != 0)
-                strcpy(*error_message, "404 Not Found: Could not open the requested resource\n");
+                strcpy(*error_message, "404 Not Found: Could not find and open the requested resource\n");
             
             return -1;
         }
