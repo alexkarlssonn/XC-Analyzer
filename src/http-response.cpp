@@ -14,10 +14,12 @@
 /**
  * ----------------------------------------------------------------------------
  * Handle the received request from a connected client and sends back an Http Response
- * The socket parameter is the socket file descriptor connected to the client
- * The response parameter is the entire client response, and size its size
- *  Returns 0 on success
- *  Returns -1 on failure
+ * socket: The socket file descriptor connected to the client
+ * response: The entire message that was received from the client
+ * size: The size of the received response
+ *
+ * Returns 0 on success, which means that the clients request was valid, and handled as intended
+ * Returns -1 on failure, which means that the clients request was not handled as intended for some reason 
  * ----------------------------------------------------------------------------
  */
 int handleClient(int socket, char* response, int size)
@@ -30,23 +32,14 @@ int handleClient(int socket, char* response, int size)
 
     if ((parse_requestline(response, size, &command, &server, &path, &protocol, &port)) == -1) 
     {
-        char* body = (char*) malloc(LINE_MAX_SIZE * sizeof(char));
-        strcpy(body, "400 Bad Request: Please provide a valid request line: [HTTP-Method] [PATH] [PROTOCOL]\n");
-        
-        fprintf(stderr, "[%ld] Failed to parse received HTTP header. Sending HTTP Response: 400 Bad Request\n", (long)getpid());
-        sendHttpResponse(socket, 400, CONNECTION_CLOSE, TYPE_HTML, &body);
-        
-        if (body != 0) free(body);
+        fprintf(stderr, "[%ld] HTTP 400: Invalid request line\n", (long)getpid());
+        sendHttpResponse(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Please provide a valid request line: [HTTP-Method] [PATH] [PROTOCOL]\n\0");
         return -1;
     }
+    
+    // Assume the protocol is HTTP/1.1
+    fprintf(stderr, "[%ld] Received HTTP Request from client: %s %s %s\n", (long)getpid(), command, path, protocol);
 
-    if (strcmp(protocol, "HTTP/1.1") == 0) {
-        fprintf(stderr, "[%ld] Received HTTP Request from client: %s %s %s\n", (long)getpid(), command, path, protocol);
-    } 
-    else {
-        fprintf(stderr, "[%ld] Received client request with unknown protocol: %s %s %s\n", (long)getpid(), command, path, protocol);
-    }
-   
 
     // List of API calls
     int API_SIZE = LINE_MAX_SIZE;
@@ -54,8 +47,6 @@ int handleClient(int socket, char* response, int size)
     char GET_ATHLETES_FIRSTNAME[] = "/api/athletes/firstname/";
     char GET_ATHLETES_LASTNAME[] = "/api/athletes/lastname/";
     char GET_ATHLETES_FULLNAME[] = "/api/athletes/fullname/";
-
-    //int GET_ATHLETE_SIZE = strlen(GET_ATHLETE);
 
 
     // ==================================================================================================== 
@@ -70,7 +61,7 @@ int handleClient(int socket, char* response, int size)
     }
     
     // ==================================================================================================== 
-    // API - Get list of athletes by firstname 
+    // API - Get athletes with matching firstname 
     // ==================================================================================================== 
     API_SIZE = strlen(GET_ATHLETES_FIRSTNAME);
     if ((strcmp(command, "GET") == 0) && (strlen(path) > API_SIZE) &&
@@ -81,14 +72,14 @@ int handleClient(int socket, char* response, int size)
     }
     
     // ==================================================================================================== 
-    // API - Get list of athletes by lastname 
+    // API - Get athletes with matching lastname 
     // ==================================================================================================== 
     API_SIZE = strlen(GET_ATHLETES_LASTNAME);
     if ((strcmp(command, "GET") == 0) && (strlen(path) > API_SIZE) &&
         (strncmp(path, GET_ATHLETES_LASTNAME, API_SIZE) == 0)) 
     {
         char* parameter = &(path[API_SIZE]);
-        //return api_getAthlete_lastname(socket, parameter);
+        return api_getAthlete_lastname(socket, parameter);
     }
     
     // ==================================================================================================== 
@@ -99,7 +90,7 @@ int handleClient(int socket, char* response, int size)
         (strncmp(path, GET_ATHLETES_FULLNAME, API_SIZE) == 0)) 
     {
         char* parameter = &(path[API_SIZE]);
-        //return api_getAthlete_fullname(socket, parameter);
+        return api_getAthlete_fullname(socket, parameter);
     }
     
 
@@ -108,61 +99,40 @@ int handleClient(int socket, char* response, int size)
     // ==================================================================================================== 
     if (strcmp(command, "GET") == 0)
     {
-        // Create the full filepath for the requested file
         char filepath[strlen(path) + (32 * sizeof(char))];
         strcpy(filepath, RESOURCE_PATH);
         if (path == 0 || (strlen(path) == 1 && path[0] == '/'))
             strcat(filepath, DEFAULT_FILE);
         else
             strcat(filepath, path);
-       
-
+            
         char* buffer = 0;
-        int status_code = 500;
-        char* error_message = (char*) malloc(LINE_MAX_SIZE * sizeof(char));
-
-        if (loadResource(socket, filepath, &buffer, &status_code, &error_message) == -1) 
+        int status_code = 500;  // Default status code on failure
+        if (loadResource(socket, filepath, &buffer, &status_code) == -1) 
         {
-            char* body = (char*) malloc(LINE_MAX_SIZE * sizeof(char));
-            if (error_message != 0)
-                strcpy(body, error_message);
-            
-            fprintf(stderr, "[%ld] Sending HTTP Response %d to client\n", (long)getpid(), status_code);
-            sendHttpResponse(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, &body);
-            
-            if (body != 0) free(body);
-            if (error_message != 0) free(error_message); 
+            sendHttpResponse(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource\n\0");
             if (buffer != 0) free(buffer);
             return -1;
         }
 
-
-        if (sendHttpResponse(socket, 200, CONNECTION_CLOSE, TYPE_HTML, &buffer) == -1) 
+        if (sendHttpResponse(socket, 200, CONNECTION_CLOSE, TYPE_HTML, buffer) == -1) 
         {
-            if (error_message != 0) free(error_message); 
             if (buffer != 0) free(buffer);
-            return -1;
+            return -1;  
         }
             
-        fprintf(stderr, "[%ld] Successfully sent HTTP Response 200 to client\n", (long)getpid());
-        
-        if (error_message != 0) free(error_message);     
+        fprintf(stderr, "[%ld] HTTP 200: Found and sent the requested resource successfully!\n", (long)getpid());
         if (buffer != 0) free(buffer);
+        
         return 0;
     }
 
     // =========================================================================================================
     // Unknown HTTP Method 
     // =========================================================================================================
-    char* body = (char*) malloc(LINE_MAX_SIZE * sizeof(char));
-    strcpy(body, "400 Bad Request. Unknown HTTP Method: ");
-    strcat(body, command);
-    strcat(body, "\n");
+    fprintf(stderr, "[%ld] HTTP 400: Unknown HTTP method: %s\n", (long)getpid(), command);
+    sendHttpResponse(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Unknown HTTP method\n\0");
     
-    fprintf(stderr, "[%ld] Unknown HTTP method: %s. Sending HTTP Response: 400 Bad Request\n", (long)getpid(), command);
-    sendHttpResponse(socket, 400, CONNECTION_CLOSE, TYPE_HTML, &body);
-    
-    if (body != 0) free(body);
     return -1;
 }
 
@@ -183,7 +153,7 @@ int handleClient(int socket, char* response, int size)
  * Return -1 on failure 
  * ----------------------------------------------------------------------------
  */
-int sendHttpResponse(int socket, int statuscode, const char* connection, const char* type, char** body)
+int sendHttpResponse(int socket, int statuscode, const char* connection, const char* type, const char* body)
 {
     if (statuscode < 100 || statuscode >= 600) {
         fprintf(stderr, "[%ld] Failed to send HTTP Response: Invalid status code\n", (long)getpid());
@@ -259,8 +229,10 @@ int sendHttpResponse(int socket, int statuscode, const char* connection, const c
     int date_line_size = strlen(date_line);
     int connection_line_size = 0; 
     int type_line_size = 0;
-    if (connection != 0) connection_line_size = strlen(connection_line);
-    if (type != 0) type_line_size = strlen(type_line);
+    if (connection != 0) 
+        connection_line_size = strlen(connection_line);
+    if (type != 0) 
+        type_line_size = strlen(type_line);
 
 
     // Combine all the individual lines into a full HTTP Header
@@ -268,19 +240,23 @@ int sendHttpResponse(int socket, int statuscode, const char* connection, const c
     char header[HEADER_SIZE];
     strcpy(header, status_line);
     strcat(header, date_line);
-    if (connection != 0) strcat(header, connection_line);
-    if (type != 0)       strcat(header, type_line);
-    if (*body != 0)      strcat(header, "\r\n");
+    if (connection != 0) 
+        strcat(header, connection_line);
+    if (type != 0) 
+        strcat(header, type_line);
+    if (body != 0) 
+        strcat(header, "\r\n");
     
 
     // Combine the header and body into a full HTTP Response
     int BODY_SIZE = 0;
-    if (*body != 0) BODY_SIZE = strlen(*body);
+    if (body != 0) 
+        BODY_SIZE = strlen(body);
     int RESPONSE_SIZE = (HEADER_SIZE + BODY_SIZE);
-
     char http_response[RESPONSE_SIZE]; 
     strcpy(http_response, header);
-    if (*body != 0) strcat(http_response, *body); 
+    if (body != 0) 
+        strcat(http_response, body); 
 
     // Send the full HTTP Response over the socket
     // Using (RESPONSE_SIZE - 1) for the size, since '\0' is not needed and actually prevents javascript files from working
@@ -297,22 +273,19 @@ int sendHttpResponse(int socket, int statuscode, const char* connection, const c
  * ----------------------------------------------------------------------------
  * Load the resource that is requested in the paremter path.
  * The content of the file will be allocated dynamically and stored in the buffer parameter. This needs to be manually freed later.
- * If the function fails, it will print an error message, store the specific error inside the parameter error_message, and return -1.
+ * If the function fails, it will print an error message and return -1.
  *
  * socket: The file descriptor for the socket used to communicate with the connected client. 
  * path: The requested resource. Should be a null terminated string and be a full path relative to the executable.
  * buffer: A pointer to the buffer that will store the content of the loaded file. 
  *         Should be null when calling this function, and needs to be manually freed later.
  * status_code: The status code to send back with the Http Response if this function fails.
- * error_message: Needs to have been allocated before calling this function with atleast a size of LINE_MAX_SIZE. 
- *                If the function fails, an error message will be stored in this parameter. 
- *                This message should be sent back as an Http Response with status code 500 later.
  *
  *  Returns 0 on success, and sets buffer to the content of the file
- *  Returns -1 on failure, prints an error message, and sets error_message to store the specific error 
+ *  Returns -1 on failure and prints an error message
  * ----------------------------------------------------------------------------
  */
-int loadResource(int socket, char* path, char** buffer, int* status_code, char** error_message)
+int loadResource(int socket, char* path, char** buffer, int* status_code)
 {
     int fd; 
     if ((fd = r_open2(path, O_RDONLY)) == -1) 
@@ -324,11 +297,7 @@ int loadResource(int socket, char* path, char** buffer, int* status_code, char**
         if ((fd = r_open2(newpath, O_RDONLY)) == -1) 
         {
             fprintf(stderr, "[%ld] Failed to open %s: %s\n", (long)getpid(), path, strerror(errno));
-            
             *status_code = 404;
-            if (*error_message != 0)
-                strcpy(*error_message, "404 Not Found: Could not find and open the requested resource\n");
-            
             return -1;
         }
     } 
@@ -337,14 +306,10 @@ int loadResource(int socket, char* path, char** buffer, int* status_code, char**
     if ((int)lseek(fd, 0, SEEK_SET) == -1) 
     { 
         fprintf(stderr, "[%ld] Failed to move file offset back to beginning after getting the file size: %s\n", (long)getpid(), strerror(errno));
-        
         if (r_close(fd) == -1) 
             fprintf(stderr, "[%ld] Failed to close: %s: %s\n", (long)getpid, path, strerror(errno));
         
         *status_code = 500;
-        if (*error_message != 0)
-            strcpy(*error_message, "500 Internal Server Error: Failed to read content of the requested resource\n");
-
         return -1;
     }
     
@@ -352,14 +317,10 @@ int loadResource(int socket, char* path, char** buffer, int* status_code, char**
     if ((bytes = (char*) malloc( (filesize+1) * sizeof(char))) == 0) 
     {
         fprintf(stderr, "[%ld] Failed to allocate memory to read the file content\n", (long)getpid());
-
         if (r_close(fd) == -1) 
             fprintf(stderr, "[%ld] Failed to close: %s: %s\n", (long)getpid, path, strerror(errno));
         
         *status_code = 500;
-        if (*error_message != 0)
-            strcpy(*error_message, "500 Internal Server Error. Failed to read content of the requested resource\n");
-
         return -1;
     }
     
@@ -367,14 +328,10 @@ int loadResource(int socket, char* path, char** buffer, int* status_code, char**
     if ((bytesread = readblock(fd, bytes, filesize)) <= 0) 
     {
         fprintf(stderr, "[%ld] Failed to read the requested file: %s: %s\n", (long)getpid(), path, strerror(errno));
-        
         if (r_close(fd) == -1) 
             fprintf(stderr, "[%ld] Failed to close: %s: %s\n", (long)getpid, path, strerror(errno));
 
         *status_code = 500;
-        if (*error_message != 0)
-            strcpy(*error_message, "500 Internal Server Error. Failed to read content of the requested resource\n");
-
         return -1;
     }
     
@@ -504,9 +461,9 @@ int parse_requestline(char* line, int len, char** command, char** server, char**
         while (*p != '\0') {    
             // Clear the port token if a non-digit shows up during creation
             // Also set the port token to the digit after the first ':' character
-            if (*port != 0 && !isdigit(*p))
+            if (*port != 0 && !is_digit(*p))
                 *port = 0;
-            if (*p == ':' && *port == 0 && isdigit(*(p + sizeof(char)))) 
+            if (*p == ':' && *port == 0 && is_digit(*(p + sizeof(char)))) 
                 *port = (p + sizeof(char));
             p++;
         }
@@ -533,7 +490,7 @@ int parse_requestline(char* line, int len, char** command, char** server, char**
  *  Returns 0 if false
  * ----------------------------------------------------------------------------
  */
-int isdigit(char ch)
+int is_digit(char ch)
 {
     if ((ch == '0') || (ch == '1') || 
         (ch == '2') || (ch == '3') || 

@@ -6,10 +6,6 @@ TODO: Start using a debugger to test the code
 
 
 
-Currently working on v0.2:
-    Implementing the API calls for getting athletes by names
-        TODO: Implement algorithm for finding matching names when searching through all athletes
-
 
 GOAL WITH VERSIONS (push and create a branch for each version on github):
  * v0.2 - API calls for getting athlete
