@@ -1,10 +1,14 @@
 
 
 TODO: Write a proper README
+TODO: Write some test code to test certain parts
+TODO: Start using a debugger to test the code
 
 
-* Currenly on branch: wokring-on-next-version (v0.2)
-  Merge with master and push once done. Then create a new branch v0.2 before starting to work on v0.3 
+
+Currently working on v0.2:
+    Implementing the API calls for getting athletes by names
+        TODO: Implement algorithm for finding matching names when searching through all athletes
 
 
 GOAL WITH VERSIONS (push and create a branch for each version on github):

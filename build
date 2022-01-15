@@ -1,11 +1,9 @@
 
 
-TARGET="backend"
-
+CFLAGS=""
 LIBS="./src/libs/Restart.cpp ./src/libs/uici.cpp ./src/libs/cJSON.cpp"
 FILES="./src/main.cpp ./src/http-response.cpp ./src/api/athletes.cpp"
-
-CFLAGS=""
+TARGET="backend"
 
 g++ ${CFLAGS} ${FILES} ${LIBS} -o ${TARGET}
 

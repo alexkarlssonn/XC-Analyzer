@@ -40,45 +40,71 @@ int handleClient(int socket, char* response, int size)
         return -1;
     }
 
-
-    if (strcmp(protocol, "HTTP/1.1") == 0)
+    if (strcmp(protocol, "HTTP/1.1") == 0) {
         fprintf(stderr, "[%ld] Received HTTP Request from client: %s %s %s\n", (long)getpid(), command, path, protocol);
-    else
+    } 
+    else {
         fprintf(stderr, "[%ld] Received client request with unknown protocol: %s %s %s\n", (long)getpid(), command, path, protocol);
-
+    }
    
+
     // List of API calls
-    char GET_ATHLETE[] = "/api/athlete/";
-    int GET_ATHLETE_SIZE = strlen(GET_ATHLETE);
+    int API_SIZE = LINE_MAX_SIZE;
+    char GET_ATHLETE_FISCODE[] = "/api/athlete/fiscode/";
+    char GET_ATHLETES_FIRSTNAME[] = "/api/athletes/firstname/";
+    char GET_ATHLETES_LASTNAME[] = "/api/athletes/lastname/";
+    char GET_ATHLETES_FULLNAME[] = "/api/athletes/fullname/";
+
+    //int GET_ATHLETE_SIZE = strlen(GET_ATHLETE);
 
 
     // ==================================================================================================== 
-    // API - Get athlete by fiscode 
+    // API - Get one athlete by fiscode 
     // ==================================================================================================== 
-    if ((strcmp(command, "GET") == 0) && 
-        (strncmp(path, GET_ATHLETE, GET_ATHLETE_SIZE) == 0) && 
-        (strlen(path) >= GET_ATHLETE_SIZE))
+    API_SIZE = strlen(GET_ATHLETE_FISCODE);
+    if ((strcmp(command, "GET") == 0) && (strlen(path) > API_SIZE) &&
+        (strncmp(path, GET_ATHLETE_FISCODE, API_SIZE) == 0))
     {
-        int fiscode;
-        (strlen(path) <= GET_ATHLETE_SIZE) ? fiscode = 0 : fiscode = atoi(&path[GET_ATHLETE_SIZE]);
-        if (fiscode <= 0) 
-        {
-            char* body = (char*) malloc(LINE_MAX_SIZE * sizeof(char));
-            strcpy(body, "400 Bad Request: Invalid fiscode parameter\n");
-
-            fprintf(stderr, "[%ld] Api call %s failed: Invalid fiscode parameter. Sending HTTP Response: 400 Bad Request\n", (long)getpid(), path);
-            sendHttpResponse(socket, 400, CONNECTION_CLOSE, TYPE_HTML, &body);
-
-            if (body != 0) free(body);            
-            return -1;
-        }
-
-        return api_getAthlete(socket, &(path[GET_ATHLETE_SIZE]));
+        char* parameter = &(path[API_SIZE]);
+        return api_getAthlete_fiscode(socket, parameter);
+    }
+    
+    // ==================================================================================================== 
+    // API - Get list of athletes by firstname 
+    // ==================================================================================================== 
+    API_SIZE = strlen(GET_ATHLETES_FIRSTNAME);
+    if ((strcmp(command, "GET") == 0) && (strlen(path) > API_SIZE) &&
+        (strncmp(path, GET_ATHLETES_FIRSTNAME, API_SIZE) == 0)) 
+    {
+        char* parameter = &(path[API_SIZE]);
+        return api_getAthlete_firstname(socket, parameter);
+    }
+    
+    // ==================================================================================================== 
+    // API - Get list of athletes by lastname 
+    // ==================================================================================================== 
+    API_SIZE = strlen(GET_ATHLETES_LASTNAME);
+    if ((strcmp(command, "GET") == 0) && (strlen(path) > API_SIZE) &&
+        (strncmp(path, GET_ATHLETES_LASTNAME, API_SIZE) == 0)) 
+    {
+        char* parameter = &(path[API_SIZE]);
+        //return api_getAthlete_lastname(socket, parameter);
+    }
+    
+    // ==================================================================================================== 
+    // API - Get list of athletes by fullname 
+    // ==================================================================================================== 
+    API_SIZE = strlen(GET_ATHLETES_FULLNAME);
+    if ((strcmp(command, "GET") == 0) && (strlen(path) > API_SIZE) &&
+        (strncmp(path, GET_ATHLETES_FULLNAME, API_SIZE) == 0)) 
+    {
+        char* parameter = &(path[API_SIZE]);
+        //return api_getAthlete_fullname(socket, parameter);
     }
     
 
     // ==================================================================================================== 
-    // GET - Try to open, read, and send back the content of the file requested in path
+    // GET - Return the content of the requested resource
     // ==================================================================================================== 
     if (strcmp(command, "GET") == 0)
     {
@@ -118,7 +144,7 @@ int handleClient(int socket, char* response, int size)
             return -1;
         }
             
-        fprintf(stderr, "[%ld] Successfully sent HTTP Response to client\n", (long)getpid());
+        fprintf(stderr, "[%ld] Successfully sent HTTP Response 200 to client\n", (long)getpid());
         
         if (error_message != 0) free(error_message);     
         if (buffer != 0) free(buffer);
@@ -224,7 +250,7 @@ int sendHttpResponse(int socket, int statuscode, const char* connection, const c
 
     char type_line[LINE_MAX_SIZE];
     if (type != 0) {
-        strcpy(type_line, "Content-Type: ");  // text/html; charset=iso-8859-1
+        strcpy(type_line, "Content-Type: "); 
         strcat(type_line, type);
         strcat(type_line, "\r\n");
     }
@@ -257,7 +283,7 @@ int sendHttpResponse(int socket, int statuscode, const char* connection, const c
     if (*body != 0) strcat(http_response, *body); 
 
     // Send the full HTTP Response over the socket
-    // Usint (RESPONSE_SIZE - 1) for the size, since '\0' is not needed and actually prevents javascript files from working
+    // Using (RESPONSE_SIZE - 1) for the size, since '\0' is not needed and actually prevents javascript files from working
     if (r_write(socket, http_response, RESPONSE_SIZE - 1) == -1) { 
         fprintf(stderr, "[%ld] Failed to send HTTP Response: r_write failed: %s\n", (long)getpid(), strerror(errno));
         return -1;
@@ -275,10 +301,12 @@ int sendHttpResponse(int socket, int statuscode, const char* connection, const c
  *
  * socket: The file descriptor for the socket used to communicate with the connected client. 
  * path: The requested resource. Should be a null terminated string and be a full path relative to the executable.
- * buffer: A pointer to the buffer that will store the content of the loaded file. Should be null when calling this function, and needs to be manually freed later.
+ * buffer: A pointer to the buffer that will store the content of the loaded file. 
+ *         Should be null when calling this function, and needs to be manually freed later.
  * status_code: The status code to send back with the Http Response if this function fails.
  * error_message: Needs to have been allocated before calling this function with atleast a size of LINE_MAX_SIZE. 
- *                If the function fails, an error message will be stored in this parameter. This message should be sent back as an Http Response with status code 500 later.
+ *                If the function fails, an error message will be stored in this parameter. 
+ *                This message should be sent back as an Http Response with status code 500 later.
  *
  *  Returns 0 on success, and sets buffer to the content of the file
  *  Returns -1 on failure, prints an error message, and sets error_message to store the specific error 
