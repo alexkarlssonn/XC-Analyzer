@@ -7,7 +7,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-#include "./api/athletes.h"
+#include "api/athletes.h"
 #include "libs/Restart.h"
 
 
