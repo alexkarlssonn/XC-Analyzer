@@ -1,7 +1,5 @@
 
 .DS_Store
 backend
-
-# TODO: Ignore the database in the future (after v0.4 maybe?) 
-# db/
+db/
 
