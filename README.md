@@ -1,8 +1,22 @@
 
 
-TODO: Write a proper README
-TODO: Write some test code to test certain parts
-TODO: Start using a debugger to test the code
+
+
+
+
+TODO v0.4: 
+[X] API call for getting raceids for athlete
+[X] API call for getting race-info for a given raceid
+[X] API call for geting race-results for a given raceid
+[X] Clean up the athelte-races.json
+    Some athletes have invalid races under their fiscode.
+    Ex. Fiscode 12 has a few raceids, that are valid raceids, but he hasn't actually done these races. 
+
+
+TODO v0.5:
+[ ] Add ./db to gitignore
+[ ] API calls for getting analyzed race results for a given athlete
+
 
 
 
@@ -10,7 +24,7 @@ TODO: Start using a debugger to test the code
 GOAL WITH VERSIONS (push and create a branch for each version on github):
  * [X] v0.2 - API calls for getting athlete
  * [X] v0.3 - Clean up database
- * [ ] v0.4 - API call for getting all resultids for an athlete. API call for result by raceid
+ * [X] v0.4 - API call for getting all resultids for an athlete. API call for result by raceid
  * [ ] v0.5 - API calls for getting analyzed results for an athlete
  * [ ] v0.6 - Backend cleanup, writing test code, bugfixes, etc.
  * [ ] v0.7 - Super simple frontend that can interact with API calls

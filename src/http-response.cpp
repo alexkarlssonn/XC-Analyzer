@@ -8,6 +8,8 @@
 #include <time.h>
 #include <unistd.h>
 #include "api/athletes.h"
+#include "api/raceids.h"
+#include "api/races.h"
 #include "libs/Restart.h"
 
 
@@ -47,11 +49,14 @@ int handleClient(int socket, char* response, int size)
     char GET_ATHLETES_FIRSTNAME[] = "/api/athletes/firstname/";
     char GET_ATHLETES_LASTNAME[] = "/api/athletes/lastname/";
     char GET_ATHLETES_FULLNAME[] = "/api/athletes/fullname/";
+    char GET_RACES_FISCODE[] = "/api/raceids/fiscode/";
+    char GET_RACEINFO_RACEID[] = "/api/raceinfo/raceid/";
+    char GET_RACE_RESULTS_RACEID[] = "/api/raceresults/raceid/";
 
 
-    // ==================================================================================================== 
-    // API - Get one athlete by fiscode 
-    // ==================================================================================================== 
+    // ------------------------------------------------------------------ 
+    // API: Get athletes
+    // ------------------------------------------------------------------ 
     API_SIZE = strlen(GET_ATHLETE_FISCODE);
     if ((strcmp(command, "GET") == 0) && (strlen(path) > API_SIZE) &&
         (strncmp(path, GET_ATHLETE_FISCODE, API_SIZE) == 0))
@@ -60,9 +65,6 @@ int handleClient(int socket, char* response, int size)
         return api_getAthlete_fiscode(socket, parameter);
     }
     
-    // ==================================================================================================== 
-    // API - Get athletes with matching firstname 
-    // ==================================================================================================== 
     API_SIZE = strlen(GET_ATHLETES_FIRSTNAME);
     if ((strcmp(command, "GET") == 0) && (strlen(path) > API_SIZE) &&
         (strncmp(path, GET_ATHLETES_FIRSTNAME, API_SIZE) == 0)) 
@@ -71,9 +73,6 @@ int handleClient(int socket, char* response, int size)
         return api_getAthlete_firstname(socket, parameter);
     }
     
-    // ==================================================================================================== 
-    // API - Get athletes with matching lastname 
-    // ==================================================================================================== 
     API_SIZE = strlen(GET_ATHLETES_LASTNAME);
     if ((strcmp(command, "GET") == 0) && (strlen(path) > API_SIZE) &&
         (strncmp(path, GET_ATHLETES_LASTNAME, API_SIZE) == 0)) 
@@ -82,9 +81,6 @@ int handleClient(int socket, char* response, int size)
         return api_getAthlete_lastname(socket, parameter);
     }
     
-    // ==================================================================================================== 
-    // API - Get list of athletes by fullname 
-    // ==================================================================================================== 
     API_SIZE = strlen(GET_ATHLETES_FULLNAME);
     if ((strcmp(command, "GET") == 0) && (strlen(path) > API_SIZE) &&
         (strncmp(path, GET_ATHLETES_FULLNAME, API_SIZE) == 0)) 
@@ -93,10 +89,40 @@ int handleClient(int socket, char* response, int size)
         return api_getAthlete_fullname(socket, parameter);
     }
     
+    // ------------------------------------------------------------------ 
+    // API: Get list of races for a given athlete
+    // ------------------------------------------------------------------ 
+    API_SIZE = strlen(GET_RACES_FISCODE);
+    if ((strcmp(command, "GET") == 0) && (strlen(path) > API_SIZE) && 
+        (strncmp(path, GET_RACES_FISCODE, API_SIZE) == 0))
+    {
+        char* parameter = &(path[API_SIZE]);
+        return api_getAthletesRaceids(socket, parameter);
+    }
+    
+    // ------------------------------------------------------------------ 
+    // API: Get race info and results
+    // ------------------------------------------------------------------ 
+    API_SIZE = strlen(GET_RACEINFO_RACEID);
+    if ((strcmp(command, "GET") == 0) && (strlen(path) > API_SIZE) && 
+        (strncmp(path, GET_RACEINFO_RACEID, API_SIZE) == 0))
+    {
+        char* parameter = &(path[API_SIZE]);
+        return api_getRaceInfo(socket, parameter);
+    }
 
-    // ==================================================================================================== 
+    API_SIZE = strlen(GET_RACE_RESULTS_RACEID);
+    if ((strcmp(command, "GET") == 0) && (strlen(path) > API_SIZE) && 
+        (strncmp(path, GET_RACE_RESULTS_RACEID, API_SIZE) == 0))
+    {
+        char* parameter = &(path[API_SIZE]);
+        return api_getRaceResult(socket, parameter);
+    }
+
+
+    // ==============================================================
     // GET - Return the content of the requested resource
-    // ==================================================================================================== 
+    // ==============================================================
     if (strcmp(command, "GET") == 0)
     {
         char filepath[strlen(path) + (32 * sizeof(char))];
@@ -127,9 +153,9 @@ int handleClient(int socket, char* response, int size)
         return 0;
     }
 
-    // =========================================================================================================
+    // ==============================================================
     // Unknown HTTP Method 
-    // =========================================================================================================
+    // ==============================================================
     fprintf(stderr, "[%ld] HTTP 400: Unknown HTTP method: %s\n", (long)getpid(), command);
     sendHttpResponse(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Unknown HTTP method\n\0");
     

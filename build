@@ -1,9 +1,14 @@
 
 
 CFLAGS=""
+
 LIBS="./src/libs/Restart.cpp ./src/libs/uici.cpp ./src/libs/cJSON.cpp"
-FILES="./src/main.cpp ./src/http-response.cpp ./src/api/athletes.cpp"
+FILES="./src/main.cpp ./src/http-response.cpp" 
+API_FILES="./src/api/athletes.cpp ./src/api/raceids.cpp ./src/api/races.cpp"
+
 TARGET="backend"
 
-g++ ${CFLAGS} ${FILES} ${LIBS} -o ${TARGET}
+
+g++ ${CFLAGS} ${FILES} ${API_FILES} ${LIBS} -o ${TARGET}
+
 
