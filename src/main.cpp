@@ -38,15 +38,14 @@ int main(int argc, char** argv)
         return 1;
     }
     fprintf(stderr, "[PARENT] Waiting for connection on port: %d\n", (int)portnumber);
-  
-    
+   
+
     while (true)
     {
         if ((fd_active = u_accept(fd_listen, client, MAX_CANON)) == -1) {
             perror("Failed to accept connection");
             continue;
         }
-        fprintf(stderr, "[PARENT] Client connected: %s\n", client);
 
         if ((childpid = fork()) == -1) {
             perror("Failed to fork child process");
@@ -55,6 +54,8 @@ int main(int argc, char** argv)
 
         if (childpid == 0)
         {
+            fprintf(stderr, "[%ld] Client connected: %s\n", (long)getpid(), client);
+            
             if (r_close(fd_listen) == -1) {
                 fprintf(stderr, "[%ld] Failed to close fd_listen: %s\n", (long)getpid(), strerror(errno));
                 return 1;

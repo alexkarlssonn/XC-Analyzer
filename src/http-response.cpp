@@ -1,16 +1,23 @@
 
 #include "http-response.h"
 
+#include "api/api.h"
+#include "libs/Restart.h"
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-#include "api/athletes.h"
-#include "api/raceids.h"
-#include "api/races.h"
-#include "libs/Restart.h"
+
+
+//
+// TODO: Move handleClient to main since it doesn't fit with "http"
+// Also, rename file to http, since it doesn't just cover responses
+//
+// And finally, move is_digit to a new file called utils, and keep general utility functions there
+// Maybe create some more functions later like custom string copy and put them there also
+//
 
 
 /**
@@ -52,6 +59,7 @@ int handleClient(int socket, char* response, int size)
     char GET_RACES_FISCODE[] = "/api/raceids/fiscode/";
     char GET_RACEINFO_RACEID[] = "/api/raceinfo/raceid/";
     char GET_RACE_RESULTS_RACEID[] = "/api/raceresults/raceid/";
+    char GET_ANALYZED_QUAL_FISCODE[] = "/api/analyze/qual/fiscode/";
 
 
     // ------------------------------------------------------------------ 
@@ -118,6 +126,20 @@ int handleClient(int socket, char* response, int size)
         char* parameter = &(path[API_SIZE]);
         return api_getRaceResult(socket, parameter);
     }
+
+    // ------------------------------------------------------------------- 
+    // API: Get analyzed sprint qualification results for a given athlete
+    // ------------------------------------------------------------------- 
+    API_SIZE = strlen(GET_ANALYZED_QUAL_FISCODE);
+    if ((strcmp(command, "GET") == 0) && (strlen(path) > API_SIZE) && 
+        (strncmp(path, GET_ANALYZED_QUAL_FISCODE, API_SIZE) == 0))
+    {
+        char* parameter = &(path[API_SIZE]);
+        return api_getAnalyzedResults_qual(socket, parameter);
+    }
+
+
+
 
 
     // ==============================================================

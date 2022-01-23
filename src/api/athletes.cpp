@@ -1,4 +1,17 @@
 
+
+#include "api.h"
+
+#include "../http-response.h"
+#include "../libs/cJSON.h"
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+
+/*
 #include "athletes.h"
 
 #include <ctype.h>
@@ -8,7 +21,7 @@
 #include <unistd.h>
 #include "../http-response.h"
 #include "../libs/cJSON.h"
-
+*/
 
 //
 // TODO: When I decide to do extensive testing, make sure to test all errors that causes an HTTP response to be sent. 

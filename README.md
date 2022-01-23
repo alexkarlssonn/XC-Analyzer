@@ -4,20 +4,23 @@
 
 
 
-TODO v0.4: 
-[X] API call for getting raceids for athlete
-[X] API call for getting race-info for a given raceid
-[X] API call for geting race-results for a given raceid
-[X] Clean up the athelte-races.json
-    Some athletes have invalid races under their fiscode.
-    Ex. Fiscode 12 has a few raceids, that are valid raceids, but he hasn't actually done these races. 
+TODO v0.5:  
+[X] Add ./db to gitignore and untrack it  
+[X] API calls for getting analyzed race results for a given athlete  
 
 
-TODO v0.5:
-[ ] Add ./db to gitignore
-[ ] API calls for getting analyzed race results for a given athlete
 
 
+TODO v0.6:
+[ ] General cleanup and refactoring
+[ ] Implement my own util functions, like string builders etc.
+[ ] Reduce the executable file size as much as possible (more dynamic memory, etc. etc.)
+
+
+
+
+BUGS:
+Api get athletes by fullname, if lasstname is empty, then a bunch or random relay teams are returned
 
 
 
