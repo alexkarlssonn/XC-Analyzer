@@ -13,7 +13,7 @@ TODO v0.6:
 
 BUGS:
 Api get athletes by fullname, if lasstname is empty, then a bunch or random relay teams are returned
-
+Results are missing the pursuit time
 
 
 

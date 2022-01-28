@@ -13,17 +13,21 @@
  * Returns the time in milliseconds on success, and -1 on failure
  * ----------------------------------------------------------------
  */
-long RaceTime_string_to_ms(char* time_string)
+unsigned int RaceTime_string_to_ms(char* time_string)
 {
-    int str_size = strlen(time_string);
+    if (time_string == 0)
+        return -1;
+
+    // Copy the given time_string since it needs to be modified
     char* str = 0;
+    int str_size = strlen(time_string);
     str = (char*) malloc(str_size * sizeof(char));
     if (str == 0)
         return -1;
     strcpy(str, time_string);
     
-    // Valid time strings has one or two colons
-    // If the given strings has more or less, return -1
+    
+    // Count the number of colons in the given string
     int colons = 0;
     char* p = str;
     while (*p != '\0') {
@@ -31,8 +35,13 @@ long RaceTime_string_to_ms(char* time_string)
             colons += 1;
         p++;
     }
-    if (colons < 1 && colons > 2)
+    // Validate if the given string has 0-2 colons
+    if (colons < 0 && colons > 2) {
+        if (str != 0)
+            free(str);
         return -1;
+    }
+
 
     // Time diffs starts with a '+' character
     // If that is the case, then skip it and start the string on the 2nd character
@@ -40,17 +49,28 @@ long RaceTime_string_to_ms(char* time_string)
     if (p[0] == '+')
         p++;
 
+    // This part of the code creates substrings for the hours, minutes, seconds and tenths in the time string
+    // The substrings are created by having the pointers below point to different places in the string, 
+    // and by replacing the delimiters with the null terminating character, to mark the end of the substrings
     char* hours = 0;
     char* minutes = 0;
     char* seconds = 0;
     char* tenths = 0;
-    if (colons == 1)
+
+    // Set either the seconds, minutes or hours to point to the start of the string
+    // depending on how many colons the string had
+    if (colons == 0)
+        seconds = p;
+    else if (colons == 1)
         minutes = p;
     else if (colons == 2)
         hours = p;
 
-    while (*p != '\0') {
-        // If there are two colons, then set the minutes-pointer first, and seconds-pointer the second
+    // Loop through the entire stiring and look for the delimiters (':' and '.')
+    while (*p != '\0') 
+    {
+        // TWO COLONS
+        // Set the minutes-pointer first, and then the seconds-pointer
         if (*p == ':' && colons == 2) {
             if (minutes == 0)
                 minutes = (p + sizeof(char));
@@ -59,13 +79,14 @@ long RaceTime_string_to_ms(char* time_string)
             *p = '\0';
         }
 
-        // If there are one colon, then set the seconds-pointer
+        // ONE COLON
+        // Set the seconds-pointer to start after the colon
         if (*p == ':' && colons == 1) {
             seconds = (p + sizeof(char));
             *p = '\0';
         }
 
-        // Set a pointer to start AFTER the decimal sign to indicate the start of the tenths/hundreths/milliseconds
+        // Set the tenths-ponter to start after the decimal sign
         if (*p == '.') { 
             tenths = (p + sizeof(char));
             *p = '\0';
@@ -74,7 +95,7 @@ long RaceTime_string_to_ms(char* time_string)
         p++;
     }
 
-    long ms = 0;
+    unsigned int ms = 0;
 
     // Convert the string for hours to milliseconds
     if (hours != 0) {

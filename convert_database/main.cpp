@@ -22,10 +22,11 @@ int main()
     //convert_athletesRaces_from_json_to_custom_format(false);
     //load_and_print_athletesRaces(false);
 
-    //convert_racesInfo_from_json_to_custom_format(true);
+    //convert_racesInfo_from_json_to_custom_format(false);
     //load_and_print_racesInfo(true);
 
-    convert_racesResults_from_json_to_custom_format(true);
+    //convert_racesResults_from_json_to_custom_format(true);
+    load_and_print_racesResults(true);
 
     return 0;
 }

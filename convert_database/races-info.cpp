@@ -116,7 +116,7 @@ int convert_racesInfo_from_json_to_custom_format(bool print_buffer)
     // ------------------------------------------------------------------------
     char file[] = "./output/races-info.txt";
     int fd;
-    if ((fd = r_open2(file, O_RDWR)) == -1) {
+    if ((fd = r_open3(file, O_WRONLY | O_CREAT | O_TRUNC, 644)) == -1) {
         perror("Failed to open output file");
         if (buffer != 0)
             free(buffer);

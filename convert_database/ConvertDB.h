@@ -3,6 +3,7 @@
 
 #include "../src/libs/cJSON.h"
 
+
 // ----------------------------------------
 // athletes.cpp
 // ----------------------------------------
@@ -25,9 +26,11 @@ int load_and_print_racesInfo(bool printAll);
    
 
 // ----------------------------------------
-// races-info.cpp
+// races-results.cpp
 // ----------------------------------------
 int convert_racesResults_from_json_to_custom_format(bool print_buffer);
+int load_and_print_racesResults(bool printAll);
+
 
 // ----------------------------------------
 // util.cpp

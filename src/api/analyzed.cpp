@@ -26,9 +26,9 @@ typedef struct
 
     char* fiscode = 0;
     char* rank = 0;
-    long time_ms = 0L;
-    long winner_time_ms = 0L;
-    long diff_ms = 0L;
+    unsigned int time_ms = 0L;
+    unsigned int winner_time_ms = 0L;
+    unsigned int diff_ms = 0L;
     float diff_percentage = 0.0f;
 
 } AnalyzedRace;
@@ -284,8 +284,8 @@ int api_getAnalyzedResults_qual(int socket, char* fiscode)
 
             // Loop though all races from the "results file"
             char* rank = 0;
-            long time = 0L;
-            long winner_time = 0L;
+            unsigned int time = 0L;
+            unsigned int winner_time = 0L;
             cJSON* races_results = cJSON_GetObjectItemCaseSensitive(JSON_race_result, "races");
             cJSON* current_race_results = NULL;
             
