@@ -4,6 +4,7 @@
 
 #include "../http-response.h"
 #include "../libs/cJSON.h"
+#include "../util/StringUtil.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>

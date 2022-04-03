@@ -4,30 +4,12 @@
 
 #include "../http-response.h"
 #include "../libs/cJSON.h"
+#include "../util/StringUtil.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-
-/*
-#include "athletes.h"
-
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include "../http-response.h"
-#include "../libs/cJSON.h"
-*/
-
-//
-// TODO: When I decide to do extensive testing, make sure to test all errors that causes an HTTP response to be sent. 
-// I want to make sure the response is sent as expected at all palces, and that all allocated resources gets freed
-//
-
 
 
 /**
@@ -345,9 +327,12 @@ int api_getAthlete_fullname(int socket, char* fullname)
     char* lastname;
     if (hasTwoNames) 
     {
+        // Set the substring for the lastname
         lastname = p;
-        firstname = &(fullname[0]);    
-        p = &(fullname[0]);
+        
+        // Replace the name delimiter '/' with '\0' so a substring for fistname can be created
+        firstname = fullname;    
+        p = fullname;
         if (*p != '/') {
             do {
                 p++;
@@ -358,6 +343,10 @@ int api_getAthlete_fullname(int socket, char* fullname)
                 }
             } while (*p != '\0' && *p != '/');
         }
+
+        // Check so the lastname is not empty
+        if (lastname[0] == '\0')
+            isValidNames = false;
     } 
 
     // -----------------------------------------------------------------
@@ -438,7 +427,7 @@ int api_getAthlete_fullname(int socket, char* fullname)
         if ((cJSON_IsString(firstname_field)) && (firstname_field->valuestring != NULL) &&
             (cJSON_IsString(lastname_field)) && (lastname_field->valuestring != NULL)) 
         {
-            // Convert both fields to lower case
+            // Convert both current name fields to lowercase
             strcpy(current_firstname, firstname_field->valuestring);  // Adds '\0' at the end
             for (int i = 0; i < strlen(current_firstname); i++) 
                 current_firstname[i] = tolower(current_firstname[i]);

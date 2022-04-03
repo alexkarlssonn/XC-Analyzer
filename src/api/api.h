@@ -42,4 +42,3 @@ int api_getAnalyzedResults_qual(int socket, char* fiscode);
 
 
 
-

@@ -1,7 +1,7 @@
 
 #include "RaceTime.h"
 
-#include "StringBuilder.h"
+#include "StringUtil.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -146,7 +146,7 @@ unsigned int RaceTime_string_to_ms(char* time_string)
  * Returns 0 on failure
  * ----------------------------------------------------------------
  */
-char* RaceTime_ms_to_string(long time)
+char* RaceTime_ms_to_string(unsigned int time)
 {
     if (time < 0)
         return 0;

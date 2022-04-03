@@ -2,15 +2,21 @@
 #pragma once
 
 
-typedef struct 
-{
+/* ---------------------------------------------------
+ * General string utility functions
+ * -------------------------------------------------- */
+int getStringSize(char* str);
+int is_digit(char ch);
+
+
+/* ---------------------------------------------------
+ * String Builder
+ * -------------------------------------------------- */
+typedef struct {
     char* string = 0;
     int maxsize = 0;
     int size = 0;
 } StringBuilder;
-
-
-int getStringSize(char* str);
 
 int str_init    (StringBuilder* builder, int size);
 int str_destory (StringBuilder* builder);

@@ -4,7 +4,7 @@ CFLAGS="-std=c++11 -O3"
 
 LIBS="./src/libs/Restart.cpp ./src/libs/uici.cpp ./src/libs/cJSON.cpp"
 API="./src/api/athletes.cpp ./src/api/races.cpp ./src/api/analyzed.cpp"
-UTIL="./src/util/StringBuilder.cpp ./src/util/RaceTime.cpp"
+UTIL="./src/util/StringUtil.cpp ./src/util/RaceTime.cpp"
 
 FILES="./src/main.cpp ./src/http-response.cpp ${LIBS} ${API} ${UTIL}" 
 

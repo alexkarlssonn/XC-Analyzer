@@ -1,6 +1,6 @@
 
 
-#include "StringBuilder.h"
+#include "StringUtil.h"
 #include <stdlib.h>
 
 
@@ -30,6 +30,26 @@ int getStringSize(char* str)
     
     return str_size;
 }
+
+
+/**
+ * ----------------------------------------------------------------------------
+ * Checks if a given character is a digit or not
+ *  Returns 1 if true,
+ *  Returns 0 if false
+ * ----------------------------------------------------------------------------
+ */
+int is_digit(char ch)
+{
+    if ((ch == '0') || (ch == '1') || 
+        (ch == '2') || (ch == '3') || 
+        (ch == '4') || (ch == '5') ||  
+        (ch == '6') || (ch == '7') || 
+        (ch == '8') || (ch == '9')) 
+        return 1;
+    return 0;
+}
+
 
 
 /*

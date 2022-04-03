@@ -2,22 +2,6 @@
 
 
 
-
-
-
-TODO v0.6:
-[ ] General cleanup and refactoring
-[ ] Implement my own util functions, like string builders etc.
-[ ] Reduce the executable file size as much as possible (more dynamic memory, etc. etc.)
-
-
-BUGS:
-Api get athletes by fullname, if lasstname is empty, then a bunch or random relay teams are returned
-Results are missing the pursuit time
-
-
-
-
 GOAL WITH VERSIONS (push and create a branch for each version on github):
  * [X] v0.2 - API calls for getting athlete
  * [X] v0.3 - Clean up database
@@ -29,18 +13,27 @@ GOAL WITH VERSIONS (push and create a branch for each version on github):
  * [ ] v1.0 - First proper release! Decent looking frontend. Can look up athletes and analyze his/hers results with decent looking statistics. Can also filter which results to analyze 
 
 
-DATABASE:  
- * athletes.json           - Stores all athletes
- * athletes-races.json     - Stores a list of all races (raceids) for each athlete 
- * races-info.json         - Stores the race info for each race
- * races-result-XX-YY.json - Stores the result list for each races with a raceids between XX and YY
 
 
 
-DATABASE RE-WRITE:  
- * athletes.json
-    (fiscode 4 bytes) (competitorid 4 bytes)
-    - Fiscode is within 1 - 10,000,331 which means they can all be stored inside 4 bytes (32 bits)
+TODO v0.6:  
+[X] Converted database to my own custom format
+[X] General cleanup and refactoring
+[X] Implement my own util functions, like string builders etc.
+[ ] Rewrite all API calls to use the new custom file format
+[ ] Test ALL possible code paths and error handlers for all API calls!
+[ ] Write test code (maybe?)
+
+
+TODO v0.7:
+[ ] Fix up the folder layout. Inside this "backend" folder should everything releated to the backend be
+    Outside the backend folder, there should be a folder for "tests", and also move the convertDB folder out there
+
+
+BUGS:
+Results are missing the pursuit time
+
+
 
 
 
