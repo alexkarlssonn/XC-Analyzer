@@ -25,7 +25,7 @@ TODO v0.6:
 [ ] Write test code (maybe?)
 
 
-TODO v0.7:
+TODO for future versions:
 [ ] Fix up the folder layout. Inside this "backend" folder should everything releated to the backend be
     Outside the backend folder, there should be a folder for "tests", and also move the convertDB folder out there
 

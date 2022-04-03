@@ -2,7 +2,8 @@
 
 #include "api.h"
 
-#include "../http-response.h"
+#include "../handle_client/load_resource.h"
+#include "../handle_client/send_http_response.h"
 #include "../libs/cJSON.h"
 #include "../util/StringUtil.h"
 #include <ctype.h>
@@ -46,7 +47,7 @@ int api_getAthlete_fiscode(int socket, char* fiscode)
     if (!isValidFiscode)
     {
         fprintf(stderr, "[%ld] HTTP 400: Api call failed, invalid parameter\n", (long)getpid());
-        sendHttpResponse(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter\n\0");
+        send_http_response(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter\n\0");
         return -1;
     }
     
@@ -56,9 +57,9 @@ int api_getAthlete_fiscode(int socket, char* fiscode)
     char file[] = DB_ATHLETES;
     char* buffer = 0;
     int status_code = 500;  // Default status code on failure
-    if (loadResource(socket, file, &buffer, &status_code) == -1)
+    if (load_resource(socket, file, &buffer, &status_code) == -1)
     {
-        sendHttpResponse(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource\n\0");
+        send_http_response(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource\n\0");
         if (buffer != 0) free(buffer);
         return -1;
     }
@@ -73,7 +74,7 @@ int api_getAthlete_fiscode(int socket, char* fiscode)
     {
         // const char* error_ptr = cJSON_GetErrorPtr();
         fprintf(stderr, "[%ld] HTTP 500: Failed to parse JSON file\n", (long)getpid());
-        sendHttpResponse(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: Failed to parse file to JSON\n\0");
+        send_http_response(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: Failed to parse file to JSON\n\0");
         cJSON_Delete(json);
         return -1;
     }
@@ -105,7 +106,7 @@ int api_getAthlete_fiscode(int socket, char* fiscode)
     if (result == NULL)
     {
         fprintf(stderr, "[%ld] HTTP 404: Could not find the requested athlete\n", (long)getpid());
-        sendHttpResponse(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Could not find the requested athlete\n\0");
+        send_http_response(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Could not find the requested athlete\n\0");
         return -1;
     }
 
@@ -117,7 +118,7 @@ int api_getAthlete_fiscode(int socket, char* fiscode)
     strcat(result_modified, "\n");  // Adds '\0' after
     if (result != 0) free(result);
 
-    if (sendHttpResponse(socket, 200, CONNECTION_CLOSE, TYPE_JSON, result_modified) == -1)
+    if (send_http_response(socket, 200, CONNECTION_CLOSE, TYPE_JSON, result_modified) == -1)
     {
         if (result_modified != 0) free(result_modified);
         return -1;
@@ -179,7 +180,7 @@ int getAthletesByName(int socket, const char* FIELD_NAME, char* name)
     if (name == 0)
     {
         fprintf(stderr, "[%ld] HTTP 400: Api call failed, invalid parameter\n", (long)getpid());
-        sendHttpResponse(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter\n\0");
+        send_http_response(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter\n\0");
         return -1;
     }
 
@@ -196,9 +197,9 @@ int getAthletesByName(int socket, const char* FIELD_NAME, char* name)
     char file[] = DB_ATHLETES;
     char* buffer = 0;
     int status_code = 500;  // Default status code on failure
-    if (loadResource(socket, file, &buffer, &status_code) == -1)
+    if (load_resource(socket, file, &buffer, &status_code) == -1)
     {
-        sendHttpResponse(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource\n\0");
+        send_http_response(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource\n\0");
         if (buffer != 0) free(buffer);
         return -1;
     }
@@ -216,7 +217,7 @@ int getAthletesByName(int socket, const char* FIELD_NAME, char* name)
     if (json == NULL || result_athletes == NULL || result_array == NULL)
     {
         fprintf(stderr, "[%ld] HTTP 500: Failed to parse JSON file\n", (long)getpid());
-        sendHttpResponse(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: Failed to parse file to JSON\n\0");
+        send_http_response(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: Failed to parse file to JSON\n\0");
         cJSON_Delete(json);
         return -1;
     }
@@ -260,7 +261,7 @@ int getAthletesByName(int socket, const char* FIELD_NAME, char* name)
     if (counter <= 0 || result == 0)
     {
         fprintf(stderr, "[%ld] HTTP 404: Could not find the requested athlete\n", (long)getpid());
-        sendHttpResponse(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Could not find the requested athlete\n\0");
+        send_http_response(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Could not find the requested athlete\n\0");
         if (result != 0) free(result);
         return -1;
     }
@@ -273,7 +274,7 @@ int getAthletesByName(int socket, const char* FIELD_NAME, char* name)
     strcat(result_modified, "\n");  // Adds '\0' at the end
     if (result != 0) free(result);
 
-    if (sendHttpResponse(socket, 200, CONNECTION_CLOSE, TYPE_JSON, result_modified) == -1) 
+    if (send_http_response(socket, 200, CONNECTION_CLOSE, TYPE_JSON, result_modified) == -1) 
     {
         if (result_modified != 0) free(result_modified);
         return -1;
@@ -355,7 +356,7 @@ int api_getAthlete_fullname(int socket, char* fullname)
     if (!isValidNames)
     {
         fprintf(stderr, "[%ld] HTTP 400: Api call failed, invalid parameter\n", (long)getpid());
-        sendHttpResponse(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter\n\0");
+        send_http_response(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter\n\0");
         return -1;
     }
 
@@ -380,9 +381,9 @@ int api_getAthlete_fullname(int socket, char* fullname)
     char file[] = DB_ATHLETES;
     char* buffer = 0;
     int status_code = 500;  // Default status code on failure
-    if (loadResource(socket, file, &buffer, &status_code) == -1)
+    if (load_resource(socket, file, &buffer, &status_code) == -1)
     {
-        sendHttpResponse(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource\n\0");
+        send_http_response(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource\n\0");
         if (buffer != 0) free(buffer);
         return -1;
     }
@@ -400,7 +401,7 @@ int api_getAthlete_fullname(int socket, char* fullname)
     if (json == NULL || result_athletes == NULL || result_array == NULL)
     {
         fprintf(stderr, "[%ld] HTTP 500: Failed to parse JSON file\n", (long)getpid());
-        sendHttpResponse(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: Failed to parse file to JSON\n\0");
+        send_http_response(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: Failed to parse file to JSON\n\0");
         cJSON_Delete(json);
         return -1;
     }
@@ -455,7 +456,7 @@ int api_getAthlete_fullname(int socket, char* fullname)
     if (counter <= 0 || result == 0)
     {
         fprintf(stderr, "[%ld] HTTP 404: Could not find the requested athlete\n", (long)getpid());
-        sendHttpResponse(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Could not find the requested athlete\n\0");
+        send_http_response(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Could not find the requested athlete\n\0");
         if (result != 0) free(result);
         return -1;
     }
@@ -468,7 +469,7 @@ int api_getAthlete_fullname(int socket, char* fullname)
     strcat(result_modified, "\n");  // Adds '\0' at the end
     if (result != 0) free(result);
 
-    if (sendHttpResponse(socket, 200, CONNECTION_CLOSE, TYPE_JSON, result_modified) == -1) 
+    if (send_http_response(socket, 200, CONNECTION_CLOSE, TYPE_JSON, result_modified) == -1) 
     {
         if (result_modified != 0) free(result_modified);
         return -1;

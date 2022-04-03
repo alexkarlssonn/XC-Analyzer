@@ -2,7 +2,8 @@
 
 #include "api.h"
 
-#include "../http-response.h"
+#include "../handle_client/load_resource.h"
+#include "../handle_client/send_http_response.h"
 #include "../libs/cJSON.h"
 #include "../util/RaceTime.h"
 #include "../util/StringUtil.h"
@@ -74,7 +75,7 @@ int api_getAnalyzedResults_qual(int socket, char* fiscode)
     if (!isValidFiscode)
     {
         fprintf(stderr, "[%ld] HTTP 400: Api call failed, invalid parameter\n", (long)getpid());
-        sendHttpResponse(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter\n\0");
+        send_http_response(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter\n\0");
         return -1;
     }
     
@@ -129,7 +130,7 @@ int api_getAnalyzedResults_qual(int socket, char* fiscode)
     if (athlete_races == NULL)
     {
         fprintf(stderr, "[%ld] HTTP 404: Could not find the requested athlete\n", (long)getpid());
-        sendHttpResponse(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Could not find the requested athlete\n\0");
+        send_http_response(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Could not find the requested athlete\n\0");
         cJSON_Delete(JSON_athletes);
         return -1;
     }
@@ -138,7 +139,7 @@ int api_getAnalyzedResults_qual(int socket, char* fiscode)
     if (number_of_races <= 0)
     {
         fprintf(stderr, "[%ld] HTTP 404: Could not find any races for the given athlete\n", (long)getpid());
-        sendHttpResponse(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Couldn't find any races for given athlete\n\0");
+        send_http_response(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Couldn't find any races for given athlete\n\0");
         return -1;
     }
 
@@ -460,7 +461,7 @@ int api_getAnalyzedResults_qual(int socket, char* fiscode)
     if (result_json == NULL || races_array == NULL)
     {
         fprintf(stderr, "[%ld] HTTP 500: Failed to create JSON object for the analyzed races\n", (long)getpid());
-        sendHttpResponse(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: Failed to create JSON object\n\0");
+        send_http_response(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: Failed to create JSON object\n\0");
         
         cJSON_Delete(result_json);
         cJSON_Delete(races_array);
@@ -595,7 +596,7 @@ int api_getAnalyzedResults_qual(int socket, char* fiscode)
     if (result == NULL)
     {
         fprintf(stderr, "[%ld] HTTP 500: Failed to construct the return data\n", (long)getpid());
-        sendHttpResponse(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: Failed to construct the return data\n\0");
+        send_http_response(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: Failed to construct the return data\n\0");
         return -1;
     }
 
@@ -608,7 +609,7 @@ int api_getAnalyzedResults_qual(int socket, char* fiscode)
     if (result != 0) 
         free(result);
 
-    if (sendHttpResponse(socket, 200, CONNECTION_CLOSE, TYPE_JSON, result_modified) == -1)
+    if (send_http_response(socket, 200, CONNECTION_CLOSE, TYPE_JSON, result_modified) == -1)
     {
         if (result_modified != 0) 
             free(result_modified);
@@ -637,9 +638,9 @@ static cJSON* load_file_and_parse_to_json(int socket, char* file)
     char* buffer = 0;
     int status_code = 500;  // Default status code on failure
     
-    if (loadResource(socket, file, &buffer, &status_code) == -1)
+    if (load_resource(socket, file, &buffer, &status_code) == -1)
     {
-        sendHttpResponse(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource\n\0");
+        send_http_response(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource\n\0");
         if (buffer != 0) 
             free(buffer);
         
@@ -653,7 +654,7 @@ static cJSON* load_file_and_parse_to_json(int socket, char* file)
     if (json == NULL)
     {
         fprintf(stderr, "[%ld] HTTP 500: Failed to parse JSON file\n", (long)getpid());
-        sendHttpResponse(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: Failed to parse file to JSON\n\0");
+        send_http_response(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: Failed to parse file to JSON\n\0");
         cJSON_Delete(json);
 
         return NULL;
