@@ -15,280 +15,9 @@
 
 /**
  * -------------------------------------------------------------------------------------
- * Tries to find the given race in the database
- * If that race is found, the info about it will be sent back over socket in JSON format with an Http response
- * If not, an Http response will also be sent to indicate the error.
- * The function also prints out messages that descibes the error before returning
- *
- * socket: The file descriptor that represents the socket to send the data over
- * raceid: The raceid for the requested race 
- *          Should be the parameter section in path that gets returned after calling parse_requestline
- *          It also needs to be a null terminated string
- * 
- * Returns 0 on success, to indicate that the race was found
- * Returns -1 on failure, to indicate that the race was not found, and that the error was sent over socket as an Http response 
- * -------------------------------------------------------------------------------------
- */
-int api_getRaceInfo(int socket, char* raceid)
-{
-    // -----------------------------------------------------------------
-    // Validate the raceid parameter
-    // -----------------------------------------------------------------
-    bool isValidRaceid = false;
-    char* p = raceid;
-    while (*p != '\0') {
-        isValidRaceid = true;
-        if (!is_digit(*p)) {
-            isValidRaceid = false;
-            break;
-        }
-        p++;
-    }
-    if (!isValidRaceid)
-    {
-        fprintf(stderr, "[%ld] HTTP 400: Api call failed, invalid parameter\n", (long)getpid());
-        send_http_response(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter\n\0");
-        return -1;
-    }
-    
-    // -----------------------------------------------------------------
-    // Load the file that stores the info for all races
-    // -----------------------------------------------------------------
-    char file[] = DB_RACE_INFO;
-    char* buffer = 0;
-    int status_code = 500;  // Default status code on failure
-    if (load_resource(socket, file, &buffer, &status_code) == -1)
-    {
-        send_http_response(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource\n\0");
-        if (buffer != 0) free(buffer);
-        return -1;
-    }
-
-    // ------------------------------------------------------------
-    // Parse the loaded file into an JSON object
-    // ------------------------------------------------------------
-    cJSON* json = cJSON_Parse(buffer);
-    if (buffer != 0) free(buffer);
-
-    if (json == NULL)
-    {
-        fprintf(stderr, "[%ld] HTTP 500: Failed to parse JSON file\n", (long)getpid());
-        send_http_response(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: Failed to parse file to JSON\n\0");
-        cJSON_Delete(json);
-        return -1;
-    }
-
-    // ------------------------------------------------------------
-    // Try to find the requested race
-    // ------------------------------------------------------------
-    char* result = NULL;
-    cJSON* race = NULL;
-    cJSON* races = cJSON_GetObjectItemCaseSensitive(json, "races");
-    cJSON* raceid_json = NULL;
-
-    cJSON_ArrayForEach(race, races)
-    {
-        raceid_json = cJSON_GetObjectItemCaseSensitive(race, "raceid");
-        if (cJSON_IsString(raceid_json) && raceid_json->valuestring != NULL && raceid != 0) 
-        {
-            if (strcmp(raceid_json->valuestring, raceid) == 0) 
-            {
-                result = cJSON_Print(race);
-                break;
-            }
-        }
-    }
-    cJSON_Delete(json);
-
-    // ------------------------------------------------------------
-    // Check if the requested race was found
-    // ------------------------------------------------------------
-    if (result == NULL)
-    {
-        fprintf(stderr, "[%ld] HTTP 404: Could not find the requested race\n", (long)getpid());
-        send_http_response(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Could not find the requested race\n\0");
-        return -1;
-    }
-
-    // ------------------------------------------------------------
-    // Send back the race info over the socket as an HTTP Response 
-    // ------------------------------------------------------------
-    char* result_modified = (char*) malloc((strlen(result) + 2) * sizeof(char));
-    strcpy(result_modified, result);
-    strcat(result_modified, "\n");  // Adds '\0' after
-    if (result != 0) free(result);
-
-    if (send_http_response(socket, 200, CONNECTION_CLOSE, TYPE_JSON, result_modified) == -1)
-    {
-        if (result_modified != 0) free(result_modified);
-        return -1;
-    }
-
-    fprintf(stderr, "[%ld] HTTP 200: Found and sent back the info for the requested race!\n", (long)getpid());
-    if (result_modified != 0) free(result_modified);
-
-    return 0;
-}
-
-
-/**
- * -------------------------------------------------------------------------------------
- * Tries to find the race results for the given race in the database
- * If that race is found, the result list will be sent back over socket in JSON format with an Http response
- * If not, an Http response will also be sent to indicate the error.
- * The function also prints out messages that descibes the error before returning
- *
- * socket: The file descriptor that represents the socket to send the data over
- * raceid: The raceid for the requested race 
- *          Should be the parameter section in path that gets returned after calling parse_requestline
- *          It also needs to be a null terminated string
- * 
- * Returns 0 on success, to indicate that the race results was found
- * Returns -1 on failure, to indicate that the race results was not found, and that the error was sent over socket as an Http response 
- * -------------------------------------------------------------------------------------
- */
-int api_getRaceResult(int socket, char* raceid)
-{
-    // -----------------------------------------------------------------
-    // Validate the raceid parameter
-    // -----------------------------------------------------------------
-    bool isValidRaceid = false;
-    int raceid_int = 0;
-    char* p = raceid;
-    while (*p != '\0') {
-        isValidRaceid = true;
-        if (!is_digit(*p)) {
-            isValidRaceid = false;
-            break;
-        }
-        p++;
-    }
-
-    // Check so the given parameter is inside the scope or valid raceids
-    if (isValidRaceid) {
-        raceid_int = atoi(raceid);
-        if (raceid_int <= 0 || raceid_int >= 41000) 
-            isValidRaceid = false;
-    }
-
-    if (!isValidRaceid)
-    {
-        fprintf(stderr, "[%ld] HTTP 400: Api call failed, invalid parameter\n", (long)getpid());
-        send_http_response(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter\n\0");
-        return -1;
-    }
-    
-    // -----------------------------------------------------------------
-    // Load the file that stores the info for all races
-    // -----------------------------------------------------------------
-    char file[128];
-    if (raceid_int < 23000) 
-        strcpy(file, DB_RACE_RESULT_0_22999);
-    else if (raceid_int >= 23000 && raceid_int < 26000)
-        strcpy(file, DB_RACE_RESULT_23000_25999);
-    else if (raceid_int >= 26000 && raceid_int < 29000)
-        strcpy(file, DB_RACE_RESULT_26000_28999);
-    else if (raceid_int >= 29000 && raceid_int < 32000)
-        strcpy(file, DB_RACE_RESULT_29000_31999);
-    else if (raceid_int >= 32000 && raceid_int < 35000)
-        strcpy(file, DB_RACE_RESULT_32000_34999);
-    else if (raceid_int >= 35000 && raceid_int < 38000)
-        strcpy(file, DB_RACE_RESULT_35000_37999);
-    else if (raceid_int >= 38000 && raceid_int < 41000)
-        strcpy(file, DB_RACE_RESULT_38000_40999);
-    
-    char* buffer = 0;
-    int status_code = 500;  // Default status code on failure
-    if (load_resource(socket, file, &buffer, &status_code) == -1)
-    {
-        send_http_response(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource\n\0");
-        if (buffer != 0) free(buffer);
-        return -1;
-    }
-
-    // ------------------------------------------------------------
-    // Parse the loaded file into an JSON object
-    // ------------------------------------------------------------
-    cJSON* json = cJSON_Parse(buffer);
-    if (buffer != 0) free(buffer);
-
-    if (json == NULL)
-    {
-        fprintf(stderr, "[%ld] HTTP 500: Failed to parse JSON file\n", (long)getpid());
-        send_http_response(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: Failed to parse file to JSON\n\0");
-        cJSON_Delete(json);
-        return -1;
-    }
-
-    // ------------------------------------------------------------
-    // Try to find the requested race and its list of results
-    // ------------------------------------------------------------
-    char* result = NULL;
-    cJSON* race = NULL;
-    cJSON* races = cJSON_GetObjectItemCaseSensitive(json, "races");
-    cJSON* raceid_json = NULL;
-    cJSON* results_array = NULL;
-
-    cJSON_ArrayForEach(race, races)
-    {
-        raceid_json = cJSON_GetObjectItemCaseSensitive(race, "raceid");
-        if (cJSON_IsString(raceid_json) && raceid_json->valuestring != NULL && raceid != 0) 
-        {
-            if (strcmp(raceid_json->valuestring, raceid) == 0) 
-            {
-                results_array = cJSON_GetObjectItemCaseSensitive(race, "result");
-                if (results_array != NULL) 
-                {
-                    // 204 (No Content): Race was found, but has no results
-                    (cJSON_GetArraySize(results_array) > 0) ? status_code = 200 : status_code = 204;
-                    result = cJSON_Print(results_array);
-                }
-                break;
-            }
-        }
-    }
-    cJSON_Delete(json);
-
-    // ------------------------------------------------------------
-    // Check if the requested race was found
-    // ------------------------------------------------------------
-    if (result == NULL)
-    {
-        fprintf(stderr, "[%ld] HTTP 404: Could not find the requested race\n", (long)getpid());
-        send_http_response(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Could not find the requested race\n\0");
-        return -1;
-    }
-
-    // -----------------------------------------------------------------
-    // Send back the race results over the socket as an HTTP Response 
-    // -----------------------------------------------------------------
-    char* result_modified = (char*) malloc((strlen(result) + 2) * sizeof(char));
-    strcpy(result_modified, result);
-    strcat(result_modified, "\n");  // Adds '\0' after
-    if (result != 0) free(result);
-
-    // status_code is 204 (No content) if the race was found, but no results exist (result_modified is "[]")
-    // status_code is 200 (OK) if the race was found, and a list of results exist as well
-    if (send_http_response(socket, status_code, CONNECTION_CLOSE, TYPE_JSON, result_modified) == -1)
-    {
-        if (result_modified != 0) free(result_modified);
-        return -1;
-    }
-
-    fprintf(stderr, "[%ld] HTTP 200: Found and sent back the results for the requested race!\n", (long)getpid());
-    if (result_modified != 0) free(result_modified);
-
-
-    return 0;
-
-}
-
-
-/**
- * -------------------------------------------------------------------------------------
  * Tries to find the list of raceids for the athlete with the given fiscode in the database 
- * If that athlete is found, the list of raceids will be sent back over socket in JSON format with an Http response
- * If not, an Http response will also be sent to indicate the error.
+ * If that athlete is found, the list of raceids will be sent back over socket in JSON format with an http response
+ * If not, an http response will also be sent to indicate the error.
  * Or an empty array is sent if the athlete was found but no raceids was found for that athlete
  * The function also prints out messages that descibes the error before returning
  *
@@ -298,7 +27,7 @@ int api_getRaceResult(int socket, char* raceid)
  *          It also needs to be a null terminated string
  * 
  * Returns 0 on success, to indicate that the athlete was found
- * Returns -1 on failure, to indicate that the athlete was not found, and that the error was sent over socket as an Http response 
+ * Returns -1 on failure, to indicate that the athlete was not found, and that the error was sent over socket as an http response 
  * -------------------------------------------------------------------------------------
  */
 int api_getAthletesRaceids(int socket, char* fiscode)
@@ -306,110 +35,600 @@ int api_getAthletesRaceids(int socket, char* fiscode)
     // -----------------------------------------------------------------
     // Validate the fiscode parameter
     // -----------------------------------------------------------------
-    bool isValidFiscode = false;
-    char* p = fiscode;
-    while (*p != '\0') {
-        isValidFiscode = true;
-        if (!is_digit(*p)) {
-            isValidFiscode = false;
-            break;
-        }
-        p++;
-    }
-    if (!isValidFiscode)
-    {
+    int fiscode_int = validate_and_convert_parameter(fiscode);
+    if (fiscode_int <= -1) {
         fprintf(stderr, "[%ld] HTTP 400: Api call failed, invalid parameter\n", (long)getpid());
         send_http_response(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter\n\0");
         return -1;
     }
     
+
     // -----------------------------------------------------------------
     // Load the file that stores all races for each athlete
     // -----------------------------------------------------------------
     char file[] = DB_ATHLETES_RACES;
     char* buffer = 0;
+    int buffer_size = 0;
     int status_code = 500;  // Default status code on failure
-    if (load_resource(socket, file, &buffer, &status_code) == -1)
-    {
+    if (load_resource(file, &buffer, &buffer_size, &status_code) == -1) {
         send_http_response(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource\n\0");
         if (buffer != 0) free(buffer);
         return -1;
     }
 
-    // ------------------------------------------------------------
-    // Parse the loaded file into an JSON object
-    // ------------------------------------------------------------
-    cJSON* json = cJSON_Parse(buffer);
-    if (buffer != 0) free(buffer);
 
-    if (json == NULL)
+    // -----------------------------------------------------------------
+    // Create the JSON object that will be sent back to the client
+    // -----------------------------------------------------------------
+    cJSON* json_races = cJSON_CreateObject();
+    cJSON* json_array = cJSON_CreateArray();
+    if (json_races == NULL || json_array == NULL) 
     {
-        fprintf(stderr, "[%ld] HTTP 500: Failed to parse JSON file\n", (long)getpid());
-        send_http_response(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: Failed to parse file to JSON\n\0");
-        cJSON_Delete(json);
+        fprintf(stderr, "[%ld] HTTP 500: Failed to create JSON object\n", (long)getpid());
+        send_http_response(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: Failed to create JSON object\n\0");
+        if (json_races != 0) cJSON_Delete(json_races);
+        if (json_array != 0) cJSON_Delete(json_array);
         return -1;
     }
+    cJSON_AddItemToObject(json_races, "races", json_array); 
 
-    
-    // ------------------------------------------------------------
-    // Try to find the requested athlete 
-    // ------------------------------------------------------------
-    char* result = NULL;
-    cJSON* athlete = NULL;
-    cJSON* athletes = cJSON_GetObjectItemCaseSensitive(json, "athletes");
-    cJSON* fiscode_json = NULL;
-    cJSON* races = NULL;
 
-    cJSON_ArrayForEach(athlete, athletes)
+    // -----------------------------------------------------------------
+    // Try to find the athlete with the requsted fiscode
+    // -----------------------------------------------------------------
+    bool foundAthlete = false;
+    int currentByte = 0;
+    while (currentByte < buffer_size)
     {
-        fiscode_json = cJSON_GetObjectItemCaseSensitive(athlete, "fiscode");
-        if (cJSON_IsString(fiscode_json) && fiscode_json->valuestring != NULL && fiscode != 0) 
-        {
-            if (strcmp(fiscode_json->valuestring, fiscode) == 0) 
+        // Make sure the next 8 bytes can be read from the buffer
+        if (currentByte + 8 >= buffer_size) break;
+
+        // Read the current fiscode and how many races are stored for that athlete
+        unsigned char bytes[4];
+        bytes[0] = buffer[currentByte++]; 
+        bytes[1] = buffer[currentByte++]; 
+        bytes[2] = buffer[currentByte++];
+        bytes[3] = buffer[currentByte++];
+        unsigned int currentFiscode = bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24);
+
+        bytes[0] = buffer[currentByte++]; 
+        bytes[1] = buffer[currentByte++]; 
+        bytes[2] = buffer[currentByte++];
+        bytes[3] = buffer[currentByte++];
+        unsigned int numberOfRaces = bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24);
+
+        // If the current fiscode is not the requested one, then skip past the list of raceids for this athlete
+        if (currentFiscode != fiscode_int) {
+            currentByte += (numberOfRaces * 4);
+        }
+        else {
+            // Loop through and read all the raceids
+            for (int i = 0; i < numberOfRaces; i++)
             {
-                races = cJSON_GetObjectItemCaseSensitive(athlete, "races");
-                if (races != NULL) 
-                {
-                    // 204 (No Content): Athlete was found, but has no races
-                    (cJSON_GetArraySize(races) > 0) ? status_code = 200 : status_code = 204;
-                    result = cJSON_Print(races);
+                // Make sure the next 4 bytes can be read from the buffer
+                if (currentByte + 4 >= buffer_size) break;
+
+                // Read the current raceid and add it to the JSON object that will be sent back to the client
+                bytes[0] = buffer[currentByte++]; 
+                bytes[1] = buffer[currentByte++]; 
+                bytes[2] = buffer[currentByte++];
+                bytes[3] = buffer[currentByte++];
+                unsigned int currentRaceid = bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24);
+
+                cJSON* json_raceid = cJSON_CreateNumber(currentRaceid);
+                if (json_raceid != NULL) {
+                    cJSON_AddItemReferenceToArray(json_array, json_raceid);
                 }
-                break;
             }
+            foundAthlete = true;
+            break;
         }
     }
-    cJSON_Delete(json);
+
+
+    // Convert the JSON object to a string and free up allocated memory
+    char* races_str = cJSON_Print(json_races);
+    cJSON_Delete(json_races);
+    if (buffer != 0) 
+        free(buffer);
+
 
     // ------------------------------------------------------------
     // Check if the requested athlete was found
     // ------------------------------------------------------------
-    if (result == NULL)
-    {
+    if (!foundAthlete) {
         fprintf(stderr, "[%ld] HTTP 404: Could not find the requested athlete\n", (long)getpid());
         send_http_response(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Could not find the requested athlete\n\0");
+        if (races_str != 0) free(races_str);
         return -1;
     }
 
-    // ------------------------------------------------------------
-    // Send back the athlete over the socket as an HTTP Response 
-    // ------------------------------------------------------------
-    char* result_modified = (char*) malloc((strlen(result) + 2) * sizeof(char));
-    strcpy(result_modified, result);
-    strcat(result_modified, "\n");  // Adds '\0' after
-    if (result != 0) free(result);
 
-    // status_code is 204 (No content) if the athlete was found, but no races exist (result_modified is "[]")
-    // status_code is 200 (OK) if the athlete was found, and a list of races exist as well
-    if (send_http_response(socket, status_code, CONNECTION_CLOSE, TYPE_JSON, result_modified) == -1)
-    {
-        if (result_modified != 0) free(result_modified);
+    // ------------------------------------------------------------
+    // Send back the raceids over the socket as an HTTP Response 
+    // ------------------------------------------------------------
+    char* response = (char*) malloc((strlen(races_str) + 2) * sizeof(char));
+    strcpy(response, races_str);
+    strcat(response, "\n");  // strcar also adds '\0' at the end
+    if (races_str != 0) free(races_str);
+
+    if (send_http_response(socket, 200, CONNECTION_CLOSE, TYPE_JSON, response) == -1) {
+        if (response != 0) free(response);
         return -1;
     }
 
-    fprintf(stderr, "[%ld] HTTP 200: Found and sent back the list of races for the requested athlete!\n", (long)getpid());
-    if (result_modified != 0) free(result_modified);
-
+    fprintf(stderr, "[%ld] HTTP 200: Found and sent back the results successfully!\n", (long)getpid());
+    if (response != 0) free(response);
+    
     return 0;
 }
+
+
+
+/**
+ * -------------------------------------------------------------------------------------
+ * Tries to find the given race in the database
+ * If that race is found, the info about it will be sent back over socket in JSON format with an http response
+ * If not, an http response will also be sent to indicate the error.
+ * The function also prints out messages that descibes the error before returning
+ *
+ * socket: The file descriptor that represents the socket to send the data over
+ * raceid: The raceid for the requested race 
+ *          Should be the parameter section in path that gets returned after calling parse_requestline
+ *          It also needs to be a null terminated string
+ * 
+ * Returns 0 on success, to indicate that the race was found
+ * Returns -1 on failure, to indicate that the race was not found, and that the error was sent over socket as an http response 
+ * -------------------------------------------------------------------------------------
+ */
+int api_getRaceInfo(int socket, char* raceid)
+{
+    // -----------------------------------------------------------------
+    // Validate the raceid parameter
+    // -----------------------------------------------------------------
+    int raceid_int = validate_and_convert_parameter(raceid);
+    if (raceid_int <= -1) {
+        fprintf(stderr, "[%ld] HTTP 400: Api call failed, invalid parameter\n", (long)getpid());
+        send_http_response(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter\n\0");
+        return -1;
+    }
+
+
+    // -----------------------------------------------------------------
+    // Load the file that stores the info for all races
+    // -----------------------------------------------------------------
+    char file[] = DB_RACE_INFO;
+    char* buffer = 0;
+    int buffer_size = 0;
+    int status_code = 500;  // Default status code on failure
+    if (load_resource(file, &buffer, &buffer_size, &status_code) == -1) {
+        send_http_response(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource\n\0");
+        if (buffer != 0) free(buffer);
+        return -1;
+    }
+
+
+    // -----------------------------------------------------------------
+    // Try to find athletes that matches the search
+    // -----------------------------------------------------------------
+    cJSON* json_raceinfo = NULL;
+    int currentByte = 0;
+    while (currentByte < buffer_size)
+    {
+        // Make sure the next 4 bytes can be read from the buffer
+        if (currentByte + 4 >= buffer_size) break;
+
+        // Read the current raceid
+        unsigned char bytes[4];
+        bytes[0] = buffer[currentByte++]; 
+        bytes[1] = buffer[currentByte++]; 
+        bytes[2] = buffer[currentByte++];
+        bytes[3] = buffer[currentByte++];
+        unsigned int currentRaceid = bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24);
+
+        if (currentRaceid != raceid_int)
+        {
+            // This is not the requested race, so skip all its fields
+            currentByte += 4;  
+            int string_counter = 0; 
+            while (string_counter < 7 && currentByte < buffer_size) {
+                if (buffer[currentByte++] == '\0') {
+                    string_counter++;  
+                }
+            }
+        }
+        else
+        {
+            // The requested race was found, so read all the fields
+            unsigned int codex;
+            char date[256];
+            char nation[256];
+            char location[256];
+            char category[256];
+            char discipline[256];
+            char type[256];
+            char gender[8];
+
+            // Make sure the next 4 bytes can be read from the buffer
+            if (currentByte + 4 >= buffer_size) break;
+
+            // Read the codex
+            bytes[0] = buffer[currentByte++]; 
+            bytes[1] = buffer[currentByte++]; 
+            bytes[2] = buffer[currentByte++];
+            bytes[3] = buffer[currentByte++];
+            codex = bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24);
+
+            // Read the date
+            int str_index = 0;
+            while (currentByte < buffer_size && buffer[currentByte++] != '\0' && str_index < 256) {
+                date[str_index++] = buffer[currentByte - 1]; 
+            }
+            date[str_index] = '\0';
+
+            // Read the nation
+            str_index = 0;
+            while (currentByte < buffer_size && buffer[currentByte++] != '\0' && str_index < 256) {
+                nation[str_index++] = buffer[currentByte - 1]; 
+            }
+            nation[str_index] = '\0';
+
+            // Read the location
+            str_index = 0;
+            while (currentByte < buffer_size && buffer[currentByte++] != '\0' && str_index < 256) {
+                location[str_index++] = buffer[currentByte - 1]; 
+            }
+            location[str_index] = '\0';
+
+            // Read the category
+            str_index = 0;
+            while (currentByte < buffer_size && buffer[currentByte++] != '\0' && str_index < 256) {
+                category[str_index++] = buffer[currentByte - 1]; 
+            }
+            category[str_index] = '\0';
+
+            // Read the discipline
+            str_index = 0;
+            while (currentByte < buffer_size && buffer[currentByte++] != '\0' && str_index < 256) {
+                discipline[str_index++] = buffer[currentByte - 1]; 
+            }
+            discipline[str_index] = '\0';
+
+            // Read the type
+            str_index = 0;
+            while (currentByte < buffer_size && buffer[currentByte++] != '\0' && str_index < 256) {
+                type[str_index++] = buffer[currentByte - 1]; 
+            }
+            type[str_index] = '\0';
+
+            // Read the gender
+            str_index = 0;
+            while (currentByte < buffer_size && buffer[currentByte++] != '\0' && str_index < 8) {
+                gender[str_index++] = buffer[currentByte - 1]; 
+            }
+            gender[str_index] = '\0';
+
+            // Create a JSON object that contains all the data for this race
+            json_raceinfo = cJSON_CreateObject();
+            if (json_raceinfo != NULL) {
+                cJSON* raceid_json = cJSON_CreateNumber(currentRaceid);
+                cJSON* codex_json = cJSON_CreateNumber(codex);
+                cJSON* date_json = cJSON_CreateString(date);
+                cJSON* nation_json = cJSON_CreateString(nation);
+                cJSON* location_json = cJSON_CreateString(location);
+                cJSON* category_json = cJSON_CreateString(category);
+                cJSON* discipline_json = cJSON_CreateString(discipline);
+                cJSON* type_json = cJSON_CreateString(type);
+                cJSON* gender_json = cJSON_CreateString(gender);
+                
+                if (raceid_json == NULL || codex_json == NULL || date_json == NULL || nation_json == NULL || location_json == NULL || 
+                    category_json == NULL || discipline_json == NULL || type_json == NULL || gender_json == NULL) {
+                    cJSON_Delete(json_raceinfo);
+                }
+                else {
+                    cJSON_AddItemToObject(json_raceinfo, "raceid", raceid_json);
+                    cJSON_AddItemToObject(json_raceinfo, "codex", codex_json);
+                    cJSON_AddItemToObject(json_raceinfo, "date", date_json);
+                    cJSON_AddItemToObject(json_raceinfo, "nation", nation_json);
+                    cJSON_AddItemToObject(json_raceinfo, "location", location_json);
+                    cJSON_AddItemToObject(json_raceinfo, "category", category_json);
+                    cJSON_AddItemToObject(json_raceinfo, "discipline", discipline_json);
+                    cJSON_AddItemToObject(json_raceinfo, "type", type_json);
+                    cJSON_AddItemToObject(json_raceinfo, "gender", gender_json);
+                }
+            }
+            break;
+        }
+    }
+
+   if (buffer != 0) 
+       free(buffer);
+
+
+   // ------------------------------------------------------------
+   // Check if the requested race was found
+   // ------------------------------------------------------------
+   if (json_raceinfo == NULL) {
+       fprintf(stderr, "[%ld] HTTP 404: Could not find the requested race\n", (long)getpid());
+       send_http_response(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Could not find the requested race\n\0");
+       return -1;
+   }
+
+
+   // ------------------------------------------------------------
+   // Send back the race info over the socket as an HTTP Response 
+   // ------------------------------------------------------------
+   char* raceinfo_str = cJSON_Print(json_raceinfo);
+   char* response = (char*) malloc((strlen(raceinfo_str) + 2) * sizeof(char));
+   strcpy(response, raceinfo_str);
+   strcat(response, "\n");  // strcar also adds '\0' at the end
+   
+   if (raceinfo_str != 0) free(raceinfo_str);
+   cJSON_Delete(json_raceinfo);
+
+   if (send_http_response(socket, 200, CONNECTION_CLOSE, TYPE_JSON, response) == -1) {
+       if (response != 0) free(response);
+       return -1;
+   }
+
+   fprintf(stderr, "[%ld] HTTP 200: Found and sent back the requested race info!\n", (long)getpid());
+   if (response != 0) free(response);
+   
+   return 0;
+}
+
+
+
+/**
+ * -------------------------------------------------------------------------------------
+ * Tries to find the race results for the given race in the database
+ * If that race is found, the result list will be sent back over socket in JSON format with an http response
+ * If not, an http response will also be sent to indicate the error.
+ * The function also prints out messages that descibes the error before returning
+ *
+ * socket: The file descriptor that represents the socket to send the data over
+ * raceid: The raceid for the requested race 
+ *          Should be the parameter section in path that gets returned after calling parse_requestline
+ *          It also needs to be a null terminated string
+ * 
+ * Returns 0 on success, to indicate that the race results was found
+ * Returns -1 on failure, to indicate that the race results was not found, and that the error was sent over socket as an http response 
+ * -------------------------------------------------------------------------------------
+ */
+int api_getRaceResult(int socket, char* raceid)
+{
+    // -----------------------------------------------------------------
+    // Validate the raceid parameter
+    // -----------------------------------------------------------------
+    int raceid_int = validate_and_convert_parameter(raceid);
+    if (raceid_int <= -1) {
+        fprintf(stderr, "[%ld] HTTP 400: Api call failed, invalid parameter\n", (long)getpid());
+        send_http_response(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter\n\0");
+        return -1;
+    }
+
+
+    // -----------------------------------------------------------------
+    // Load the file that stores all race results
+    // -----------------------------------------------------------------
+    char file[] = DB_RACE_RESULTS;
+    char* buffer = 0;
+    int buffer_size = 0;
+    int status_code = 500;  // Default status code on failure
+    if (load_resource(file, &buffer, &buffer_size, &status_code) == -1) {
+        send_http_response(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource\n\0");
+        if (buffer != 0) free(buffer);
+        return -1;
+    }
+
+
+    // -----------------------------------------------------------------
+    // Create the JSON object that will be sent back to the client
+    // -----------------------------------------------------------------
+    cJSON* json_race = cJSON_CreateObject();
+    cJSON* json_resultsarray = cJSON_CreateArray();
+    if (json_race == NULL || json_resultsarray == NULL) 
+    {
+        fprintf(stderr, "[%ld] HTTP 500: Failed to create JSON object\n", (long)getpid());
+        send_http_response(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: Failed to create JSON object\n\0");
+        if (json_race != 0) cJSON_Delete(json_race);
+        if (json_resultsarray != 0) cJSON_Delete(json_resultsarray);
+        return -1;
+    }
+    cJSON_AddItemToObject(json_race, "results", json_resultsarray); 
+
+
+    // ------------------------------------------------------------
+    // Try to find the requested race and its list of results
+    // ------------------------------------------------------------
+    bool foundRace = false;
+    int currentByte = 0;
+    while (currentByte < buffer_size)
+    {
+        // Make sure the next 6 bytes can be read from the buffer
+        if (currentByte + 6 >= buffer_size) break;
+
+        // Read the current raceid and the number of ranks it has
+        unsigned char bytes[4];
+        bytes[0] = buffer[currentByte++]; 
+        bytes[1] = buffer[currentByte++]; 
+        bytes[2] = buffer[currentByte++];
+        bytes[3] = buffer[currentByte++];
+        unsigned int currentRaceid = bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24);
+
+        bytes[0] = buffer[currentByte++];
+        bytes[1] = buffer[currentByte++];
+        unsigned int number_of_ranks = bytes[0] | (bytes[1] << 8); 
+
+        // Check if the current race is the requested one
+        if (currentRaceid != raceid_int) 
+        {
+            for (int i = 0; i < number_of_ranks; i++) {
+                // This is not the requested race, so skip all its fields for each rank    
+                currentByte += 18;  
+                int string_counter = 0; 
+                while (string_counter < 3 && currentByte < buffer_size) {
+                    if (buffer[currentByte++] == '\0') {
+                        string_counter++;  
+                    }
+                }
+            }
+        }
+        else {
+            // This is the requested race, so loop through all its ranks
+            for (int i = 0; i < number_of_ranks; i++) 
+            {
+                // Read all the fields for this rank
+                unsigned int rank;
+                unsigned int bib;
+                unsigned int fiscode;
+                unsigned int time;
+                unsigned int diff;
+                unsigned int year;
+                char athlete[256];
+                char nation[256];
+                char fispoints[16];
+
+                // Make sure the next 18 bytes can be read from the buffer
+                if (currentByte + 18 >= buffer_size) break;
+
+                // Read the rank
+                bytes[0] = buffer[currentByte++]; 
+                bytes[1] = buffer[currentByte++]; 
+                rank = bytes[0] | (bytes[1] << 8);
+
+                // Read the bib
+                bytes[0] = buffer[currentByte++]; 
+                bytes[1] = buffer[currentByte++]; 
+                bib = bytes[0] | (bytes[1] << 8);
+
+                // Read the fiscode
+                bytes[0] = buffer[currentByte++]; 
+                bytes[1] = buffer[currentByte++]; 
+                bytes[2] = buffer[currentByte++];
+                bytes[3] = buffer[currentByte++];
+                fiscode = bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24);
+
+                // Read the time
+                bytes[0] = buffer[currentByte++]; 
+                bytes[1] = buffer[currentByte++]; 
+                bytes[2] = buffer[currentByte++];
+                bytes[3] = buffer[currentByte++];
+                time = bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24);
+
+                // Read the diff
+                bytes[0] = buffer[currentByte++]; 
+                bytes[1] = buffer[currentByte++]; 
+                bytes[2] = buffer[currentByte++];
+                bytes[3] = buffer[currentByte++];
+                diff = bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24);
+
+                // Read the year
+                bytes[0] = buffer[currentByte++]; 
+                bytes[1] = buffer[currentByte++]; 
+                year = bytes[0] | (bytes[1] << 8);
+
+                // Read the athlete
+                int str_index = 0;
+                while (currentByte < buffer_size && buffer[currentByte++] != '\0' && str_index < 256) {
+                    athlete[str_index++] = buffer[currentByte - 1]; 
+                }
+                athlete[str_index] = '\0';
+
+                // Read the nation
+                str_index = 0;
+                while (currentByte < buffer_size && buffer[currentByte++] != '\0' && str_index < 256) {
+                    nation[str_index++] = buffer[currentByte - 1]; 
+                }
+                nation[str_index] = '\0';
+
+                // Read the fispoints
+                str_index = 0;
+                while (currentByte < buffer_size && buffer[currentByte++] != '\0' && str_index < 256) {
+                    fispoints[str_index++] = buffer[currentByte - 1]; 
+                }
+                fispoints[str_index] = '\0';
+
+                // Create a JSON object that contains all the data for this rank
+                cJSON* json_rank = cJSON_CreateObject();
+                if (json_rank != NULL) 
+                {
+                    // Create JSON objects for all fields 
+                    cJSON* rank_json = cJSON_CreateNumber(rank);
+                    cJSON* bib_json = cJSON_CreateNumber(bib);
+                    cJSON* fiscode_json = cJSON_CreateNumber(fiscode);
+                    cJSON* time_json = cJSON_CreateNumber(time);
+                    cJSON* diff_json = cJSON_CreateNumber(diff);
+                    cJSON* year_json = cJSON_CreateNumber(year);
+                    cJSON* athlete_json = cJSON_CreateString(athlete);
+                    cJSON* nation_json = cJSON_CreateString(nation);
+                    cJSON* fispoints_json = cJSON_CreateString(fispoints);
+                    
+                    if (rank_json == NULL || bib_json == NULL || fiscode_json == NULL || time_json == NULL || diff_json == NULL ||
+                        year_json == NULL || athlete_json == NULL || nation_json == NULL || fispoints_json == NULL) {
+                        cJSON_Delete(json_rank);
+                    }
+                    else 
+                    {
+                        // Add each field to the current rank, then add it to the array of all ranks
+                        cJSON_AddItemToObject(json_rank, "rank", rank_json);
+                        cJSON_AddItemToObject(json_rank, "bib", bib_json);
+                        cJSON_AddItemToObject(json_rank, "fiscode", fiscode_json);
+                        cJSON_AddItemToObject(json_rank, "time", time_json);
+                        cJSON_AddItemToObject(json_rank, "diff", diff_json);
+                        cJSON_AddItemToObject(json_rank, "year", year_json);
+                        cJSON_AddItemToObject(json_rank, "athlete", athlete_json);
+                        cJSON_AddItemToObject(json_rank, "nation", nation_json);
+                        cJSON_AddItemToObject(json_rank, "fispoints", fispoints_json);
+                        cJSON_AddItemReferenceToArray(json_resultsarray, json_rank);
+                    }
+                }
+            }
+            foundRace = true;
+            break;
+        }
+    }
+
+    // Convert the JSON object to a string and free up allocated memory
+    char* race_str = cJSON_Print(json_race);
+    cJSON_Delete(json_race);
+    if (buffer != 0) 
+        free(buffer);
+
+
+    // ------------------------------------------------------------
+    // Check if the requested race was found
+    // ------------------------------------------------------------
+    if (!foundRace) {
+        fprintf(stderr, "[%ld] HTTP 404: Could not find the requested race\n", (long)getpid());
+        send_http_response(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Could not find the requested race\n\0");
+        if (race_str != 0) free(race_str);
+        return -1;
+    }
+
+
+    // ------------------------------------------------------------------
+    // Send back the race results over the socket as an HTTP Response 
+    // ------------------------------------------------------------------
+    char* response = (char*) malloc((strlen(race_str) + 2) * sizeof(char));
+    strcpy(response, race_str);
+    strcat(response, "\n");  // strcar also adds '\0' at the end
+    if (race_str != 0) free(race_str);
+
+    if (send_http_response(socket, 200, CONNECTION_CLOSE, TYPE_JSON, response) == -1) {
+        if (response != 0) free(response);
+        return -1;
+    }
+
+    fprintf(stderr, "[%ld] HTTP 200: Found and sent back the results for the requested race!\n", (long)getpid());
+    if (response != 0) free(response);
+    
+    return 0;
+}
+
+
+
+
+
 
 

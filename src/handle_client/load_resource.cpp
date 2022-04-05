@@ -13,17 +13,17 @@
  * The content of the file will be allocated dynamically and stored in the buffer parameter. This needs to be manually freed later.
  * If the function fails, it will print an error message, sets staus_code to indicate the error, and return -1.
  *
- * socket: The file descriptor for the socket used to communicate with the connected client. 
  * path: The requested resource. Should be a null terminated string and be a full path relative to the executable.
  * buffer: A pointer to the buffer that will store the content of the loaded file. 
  *         Should be null when calling this function, and needs to be manually freed later.
+ * size: The number of bytes that was read and stored inside buffer.
  * status_code: The status code that should be sent back with an http response if this function fails.
  *
  *  Returns 0 on success, and sets buffer to the content of the file
  *  Returns -1 on failure, prints an error message, and sets status_code to indicate the error
  * ----------------------------------------------------------------------------
  */
-int load_resource(int socket, char* path, char** buffer, int* status_code)
+int load_resource(char* path, char** buffer, int* size, int* status_code)
 {
     int fd; 
     if ((fd = r_open2(path, O_RDONLY)) == -1) 
@@ -78,6 +78,7 @@ int load_resource(int socket, char* path, char** buffer, int* status_code)
 
     bytes[bytesread] = '\0';
     *buffer = bytes;  // The buffer needs to be manually freed later
+    *size = bytesread;
 
     return 0;
 }

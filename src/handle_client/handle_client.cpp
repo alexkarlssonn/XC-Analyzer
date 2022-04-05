@@ -151,8 +151,9 @@ int handle_client(int socket, char* bytes, int size)
         
         // Attempt to load and send back the requested resource    
         char* buffer = 0;
+        int buffer_size = 0;
         int status_code = 500;  // Default status code on failure
-        if (load_resource(socket, filepath, &buffer, &status_code) == -1) {
+        if (load_resource(filepath, &buffer, &buffer_size, &status_code) == -1) {
             send_http_response(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Error: Could not find what you were looking for\n\0");
             if (buffer != 0) 
                 free(buffer);
