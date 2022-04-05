@@ -2,43 +2,56 @@
 
 
 
-
-
-TODO v0.5:  
-[X] Add ./db to gitignore and untrack it  
-[X] API calls for getting analyzed race results for a given athlete  
-
-
-
-
-TODO v0.6:
-[ ] General cleanup and refactoring
-[ ] Implement my own util functions, like string builders etc.
-[ ] Reduce the executable file size as much as possible (more dynamic memory, etc. etc.)
-
-
-
-
-BUGS:
-Api get athletes by fullname, if lasstname is empty, then a bunch or random relay teams are returned
-
-
-
 GOAL WITH VERSIONS (push and create a branch for each version on github):
  * [X] v0.2 - API calls for getting athlete
  * [X] v0.3 - Clean up database
  * [X] v0.4 - API call for getting all resultids for an athlete. API call for result by raceid
- * [ ] v0.5 - API calls for getting analyzed results for an athlete
- * [ ] v0.6 - Backend cleanup, writing test code, bugfixes, etc.
- * [ ] v0.7 - Super simple frontend that can interact with API calls
+ * [X] v0.5 - API calls for getting analyzed results for an athlete
+ * [X] v0.6 - Cleanup, convert database to binary 
+ * [ ] v0.7 - Write test code, bugfixes, etc.
+ * [ ] v0.8 - Super simple frontend that can interact with API calls
 
  * [ ] v1.0 - First proper release! Decent looking frontend. Can look up athletes and analyze his/hers results with decent looking statistics. Can also filter which results to analyze 
 
+  
 
-DATABASE:  
- * athletes.json           - Stores all athletes
- * athletes-races.json     - Stores a list of all races (raceids) for each athlete 
- * races-info.json         - Stores the race info for each race
- * races-result-XX-YY.json - Stores the result list for each races with a raceids between XX and YY
+BUGS:  
+Results are missing the pursuit time  
+
+  
+
+TODO v0.6:  
+[X] Converted database to my own custom format
+[X] General cleanup and refactoring
+[X] Implement my own util functions, like string builders etc.
+[X] Rewrite all API calls to use the new custom file format  
+  
+
+The current step I'm working on is converting the API calls to use the new db that has the new binary file format  
+API CALLS THAT HAS BEEN CONVERTED:  
+[X] Athlete by fiscode
+[X] Athlete by firstname
+[X] Athlete by lastname
+[X] Athlete by fullname
+[X] Raceids
+[X] Race info
+[X] Race results
+[X] Analyzed results
+
+  
+
+
+TODO v0.7:
+[ ] Test ALL possible code paths and error handlers for all API calls!
+[ ] Write test code (maybe?)
+[ ] Fix up the folder layout. Inside this "backend" folder should everything releated to the backend be
+    Outside the backend folder, there should be a folder for "tests", and also move the convertDB folder out there
+
+
+
+
+
+
+
 
 
