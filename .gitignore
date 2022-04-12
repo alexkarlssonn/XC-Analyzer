@@ -1,6 +1,7 @@
 
 .DS_Store
 backend
-db/
+db/_old_db/*
+# db/
 # convert_database/output/*
 
