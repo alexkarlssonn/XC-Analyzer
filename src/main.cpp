@@ -30,7 +30,7 @@ int main(int argc, char** argv)
     int bytes;
 
     // --------------------------------------------------------
-    // Open a file descirptor for listening for connections
+    // Open a file descriptor for listening for connections
     // --------------------------------------------------------
     u_port_t portnumber = DEFAULT_PORT;
     if (argc == 2) {
@@ -76,8 +76,9 @@ int main(int argc, char** argv)
                 fprintf(stderr, "[%ld] %s disconnected\n", (long)getpid(), client);
                 return 1;
             }
-            
             readbuffer[bytes] = '\0';
+            
+            // Handle the message received from the connected client
             handle_client(fd_active, readbuffer, bytes + 1);
 
             fprintf(stderr, "[%ld] %s disconnected\n", (long)getpid(), client);

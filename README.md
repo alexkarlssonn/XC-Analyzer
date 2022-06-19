@@ -1,7 +1,7 @@
 
 # XC Analyzer  
   
-## To build  
+## How to build
 This server is built on a MAC but should work fine on Linux. On Windows, you probably need to change the build file and/or the compiler used.  
 On Mac simple run the shell script to build everything.  
   
@@ -37,23 +37,37 @@ Paths and API calls:
 
 
 
-TODO LIST:  
+VERSION CHECKLIST:  
  * [X] v0.2 - API calls for getting athlete
  * [X] v0.3 - Clean up database
  * [X] v0.4 - API call for getting all resultids for an athlete. API call for result by raceid
  * [X] v0.5 - API calls for getting analyzed results for an athlete
  * [X] v0.6 - Cleanup, convert database to binary format instead of slow JSON format 
- * [ ] v0.7 - Write some simple tests, bugfixes, etc.
- * [ ] v0.8 - Super simple frontend that can interact with API calls
+ * [ ] v0.7 - Write some tests, bugfixes, etc.
+ * [ ] v0.8 - Simple frontend that can interact with API calls
 
  * [ ] v1.0 - First proper release! Decent looking frontend. Can look up athletes and analyze his/hers results with decent looking statistics. Can also filter which results to analyze 
   
   
+GENERAL TODOS:  
+[ ] Blacklist css and js files from the resource folders when sending requests to the server  
+
 
   
 
 BUGS:  
 Results are missing the pursuit time  
+
+
+
+TODO v0.7:  
+[ ] Test ALL possible code paths and error handlers for all API calls!  
+[X] Write test code that can easily be expanded later 
+[ ] Fix up the folder layout. Inside this "backend" folder should everything releated to the backend be  
+    Outside the backend folder, there should be a folder for "tests", and also move the convertDB folder out there  
+  
+
+
 
   
 
@@ -77,17 +91,6 @@ API CALLS THAT HAS BEEN CONVERTED:
 [X] Race results  
 [X] Analyzed results  
   
-
-
-TODO v0.7:  
-[ ] Test ALL possible code paths and error handlers for all API calls!  
-[ ] Write test code (maybe?)  
-[ ] Fix up the folder layout. Inside this "backend" folder should everything releated to the backend be  
-    Outside the backend folder, there should be a folder for "tests", and also move the convertDB folder out there  
-  
-
-
-
 
 
 
