@@ -35,7 +35,7 @@ Paths and API calls:
 
 
 
-
+## Checklists and todo-lists
 
 VERSION CHECKLIST:  
  * [X] v0.2 - API calls for getting athlete
@@ -50,51 +50,18 @@ VERSION CHECKLIST:
   
   
 GENERAL TODOS:  
-[ ] Blacklist css and js files from the resource folders when sending requests to the server  
+[ ] Create a controller that maps requested paths to the physical filepaths inside this folder 
+[ ] For all API Calls: On success when they print the success message, they should include the request in that message
 
-
-  
 
 BUGS:  
-Results are missing the pursuit time  
+[ ] Results are missing the pursuit time  
 
 
 
 TODO v0.7:  
-[ ] Test ALL possible code paths and error handlers for all API calls!  
 [X] Write test code that can easily be expanded later 
-[ ] Fix up the folder layout. Inside this "backend" folder should everything releated to the backend be  
-    Outside the backend folder, there should be a folder for "tests", and also move the convertDB folder out there  
+[X] Fix up the project layout. 
+    
   
-
-
-
-  
-
-TODO v0.6:  
-[X] Converted database to my own custom format  
-[X] General cleanup and refactoring  
-[X] Implement my own util functions, like string builders etc.  
-[X] Rewrite all API calls to use the new custom file format    
-  
-  
-  
-The current step I'm working on is converting the API calls to use the new db that has the new binary file format  
-See the folder "convert_datatbase" for code that converts the database from JSON to the new binary format.  
-API CALLS THAT HAS BEEN CONVERTED:  
-[X] Athlete by fiscode  
-[X] Athlete by firstname  
-[X] Athlete by lastname  
-[X] Athlete by fullname  
-[X] Raceids  
-[X] Race info  
-[X] Race results  
-[X] Analyzed results  
-  
-
-
-
-
-
-
 

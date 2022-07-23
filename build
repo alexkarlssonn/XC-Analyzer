@@ -8,7 +8,7 @@ UTIL="./src/util/StringUtil.cpp ./src/util/RaceTime.cpp"
 API="./src/api/athletes.cpp ./src/api/races.cpp ./src/api/analyzed_qual.cpp ./src/api/validate_parameters.cpp"
 HANDLE_CLIENT="./src/handle_client/handle_client.cpp ./src/handle_client/load_resource.cpp ./src/handle_client/parse_requestline.cpp ./src/handle_client/send_http_response.cpp"
 
-FILES="./src/main.cpp ${LIBS} ${UTIL} ${API} ${HANDLE_CLIENT}" 
+FILES="./src/main.cpp ./src/Request.cpp ./src/Response.cpp ${LIBS} ${UTIL} ${API}" 
 
 
 ${CC} ${CFLAGS} ${FILES} -o ${TARGET}
