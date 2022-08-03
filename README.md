@@ -43,8 +43,7 @@ VERSION CHECKLIST:
  * [X] v0.4 - API call for getting all resultids for an athlete. API call for result by raceid
  * [X] v0.5 - API calls for getting analyzed results for an athlete
  * [X] v0.6 - Cleanup, convert database to binary format instead of slow JSON format 
- * [ ] v0.7 - Write some tests, bugfixes, etc.
- * [ ] v0.8 - Simple frontend that can interact with API calls
+ * [X] v0.7 - Write some tests, bugfixes, etc. + Simple frontend that can interact with API calls
 
  * [ ] v1.0 - First proper release! Decent looking frontend. Can look up athletes and analyze his/hers results with decent looking statistics. Can also filter which results to analyze 
   
@@ -62,10 +61,5 @@ BUGS:
 [X] Raceids for AnalyzeQual is wrong. They do no match the race they are refering to (FIXED: there was an error in one of the loops in the backend that returns the raceid)  
 
 
-
-TODO v0.7:  
-[X] Write test code that can easily be expanded later 
-[X] Fix up the project layout. 
-    
   
 
