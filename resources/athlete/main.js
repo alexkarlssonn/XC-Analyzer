@@ -21,11 +21,23 @@ function http_async(method, url, callback)
 }
 
 
+/**
+ * ------------------------------------------------------------------------
+ * Helper function for padding a number with zeroes.
+ * Used when displaying the racetime from the database
+ * ------------------------------------------------------------------------
+ */
 function padTo2Digits(num)
 {
     return num.toString().padStart(2, '0');
 }
 
+/**
+ * ------------------------------------------------------------------------
+ * Converts a given number of milliseconds to a "racetime string" (either mm:ss.hh or ss.hh)
+ * Used when displaying the racetime returned from the database
+ * ------------------------------------------------------------------------
+ */
 function convert_ms_to_time(ms)
 {
     let hundreths = Math.floor(ms / 10);

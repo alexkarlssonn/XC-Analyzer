@@ -21,6 +21,36 @@ function http_async(method, url, callback)
 }
 
 
+/**
+ * ------------------------------------------------------------------------
+ * Helper function for padding a number with zeroes.
+ * Used when displaying the racetime from the database
+ * ------------------------------------------------------------------------
+ */
+function padTo2Digits(num)
+{
+    return num.toString().padStart(2, '0');
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * Converts a given number of milliseconds to a "racetime string" (either mm:ss.hh or ss.hh)
+ * Used when displaying the racetime returned from the database
+ * ------------------------------------------------------------------------
+ */
+function convert_ms_to_time(ms)
+{
+    let hundreths = Math.floor(ms / 10);
+    let seconds = Math.floor(ms / 1000);
+    let minutes = Math.floor(ms / 60000);
+    hundreths = hundreths % 100;
+    seconds = seconds % 60;
+    minutes = minutes % 60;
+    if (minutes > 0)
+        return `${padTo2Digits(minutes)}:${padTo2Digits(seconds)}.${padTo2Digits(hundreths)}`;
+    else
+        return `${padTo2Digits(seconds)}.${padTo2Digits(hundreths)}`;
+}
 
 
 /**
@@ -47,7 +77,17 @@ window.onload = function()
             let json = JSON.parse(body);
             if (json) 
             {
-                console.log(json);
+                let date_div = document.createElement("div");
+                race_info.appendChild(date_div);
+                date_div.innerHTML = json.date;
+
+                let discipline_div = document.createElement("div");
+                race_info.appendChild(discipline_div);
+                discipline_div.innerHTML = json.discipline;
+
+                let location_div = document.createElement("div");
+                race_info.appendChild(location_div);
+                location_div.innerHTML = json.location + " " + json.nation;
             }
         }
         else 
@@ -61,9 +101,53 @@ window.onload = function()
     http_async("GET", race_results_url, function(body, status_code) {
         if (status_code == 200) {
             let json = JSON.parse(body);
-            if (json) 
-            {
-                console.log(json);
+            if (json) {
+                if (json.results) 
+                {
+                    results = json.results;
+                    for (let i = 0; i < results.length; i++) {
+                        result = results[i];
+                        if (result) 
+                        {
+                            let result_div = document.createElement("div");
+                            race_results.appendChild(result_div);
+
+                            let rank_div = document.createElement("div");
+                            race_results.appendChild(rank_div);
+                            rank_div.innerHTML = "Rank: " + result.rank;
+
+                            let name_div = document.createElement("div");
+                            race_results.appendChild(name_div);
+                            name_div.innerHTML = result.athlete;
+                            
+                            let fiscode_div = document.createElement("div");
+                            race_results.appendChild(fiscode_div);
+                            fiscode_div.innerHTML = "Fiscode: " + result.fiscode;
+
+                            let nation_div = document.createElement("div");
+                            race_results.appendChild(nation_div);
+                            nation_div.innerHTML = result.nation;
+
+                            let born_div = document.createElement("div");
+                            race_results.appendChild(born_div);
+                            born_div.innerHTML = result.year;
+
+                            let racetime = convert_ms_to_time(result.time);
+                            let difftime = convert_ms_to_time(result.diff);
+                            if (result.diff > 0) { difftime = "+" + difftime; }
+                            let time_div = document.createElement("div");
+                            race_results.appendChild(time_div);
+                            time_div.innerHTML = "Time: " + racetime + " (" + difftime + ")";
+
+                            let fispoints_div = document.createElement("div");
+                            race_results.appendChild(fispoints_div);
+                            fispoints_div.innerHTML = "Fispoints: " + result.fispoints;
+
+                            let br = document.createElement("br");
+                            race_results.appendChild(br);
+                        }
+                    }
+                }
             }
         }
         else 

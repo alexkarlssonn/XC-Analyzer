@@ -51,6 +51,7 @@ VERSION CHECKLIST:
   
 GENERAL TODOS:  
 [X] Create a controller that maps requested paths to the physical filepaths inside this folder  
+[ ] Remove spaces from search fields before sending request (maybe? think about it some more..)  
 [ ] For all API Calls: On success when they print the success message, they should include the request in that message  
 [ ] Basically what the point above said, but make sure the server prints out relevant, helpfull and accurate messages  
 [ ] When a 404 not found occurs and that specific error page gets sent back, make sure its not sent back with the status code 200 like it is now
