@@ -10,6 +10,7 @@
 #include <string.h>
 #include <unistd.h>
 
+
 /**
  * -----------------------------------------------------------------------------------------
  * Handles the request that was received from the client
@@ -31,7 +32,7 @@ int handle_client(int socket, char* bytes, int size)
     char* port;
 
     // -------------------------------------------------------------------------------------------------
-    // Assumes that the received data (bytes) is an HTTP Request line, and tries to parse it
+    // Assumes that the received data (bytes) is an HTTP request line, and tries to parse it
     // On success, each part of the request line gets divided into substrings (ending with a null-terminating character)
     // But this doesn't mean that the request line was valid, just that it was divided into substrings 
     // -------------------------------------------------------------------------------------------------

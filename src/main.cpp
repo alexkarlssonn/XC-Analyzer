@@ -1,6 +1,7 @@
 
 
-#include "./handle_client/handle_client.h"
+//#include "./handle_client/handle_client.h"
+#include "Request.h"
 #include "./libs/Restart.h"
 #include "./libs/uici.h"
 #include <errno.h>
@@ -30,7 +31,7 @@ int main(int argc, char** argv)
     int bytes;
 
     // --------------------------------------------------------
-    // Open a file descirptor for listening for connections
+    // Open a file descriptor for listening for connections
     // --------------------------------------------------------
     u_port_t portnumber = DEFAULT_PORT;
     if (argc == 2) {
@@ -64,24 +65,50 @@ int main(int argc, char** argv)
         if (childpid == 0)
         {
             fprintf(stderr, "[%ld] Client connected: %s\n", (long)getpid(), client);
-            
             if (r_close(fd_listen) == -1) {
                 fprintf(stderr, "[%ld] Failed to close fd_listen: %s\n", (long)getpid(), strerror(errno));
                 return 1;
             }
-  
-            char readbuffer[BUFFER_SIZE];
-            if ((bytes = r_read(fd_active, readbuffer, BUFFER_SIZE - 1)) == -1) {
+            
+            
+            /* 
+            char client_message[BUFFER_SIZE];
+            if ((bytes = r_read(fd_active, client_message, BUFFER_SIZE - 1)) == -1) {
                 fprintf(stderr, "[%ld] Failed to read message from server: Closing connection...\n", (long)getpid());
                 fprintf(stderr, "[%ld] %s disconnected\n", (long)getpid(), client);
                 return 1;
             }
+            client_message[bytes] = '\0';
             
-            readbuffer[bytes] = '\0';
-            handle_client(fd_active, readbuffer, bytes + 1);
+            // Handle the message received from the connected client
+            handle_client(fd_active, client_message, bytes + 1);
 
             fprintf(stderr, "[%ld] %s disconnected\n", (long)getpid(), client);
             return 0;
+            */
+
+
+            //
+            // TODO: New path. Replace the old path above with this new one once it works.
+            // TODO: Make sure all points of failure displays error messages and sends an http response in a good way
+            //
+            Request request;
+            if (read_and_parse_request(fd_active, &request) == -1) {
+                fprintf(stderr, "[%ld] Failed to read/parse the client request. Closing connection...\n", (long)getpid());
+                fprintf(stderr, "[%ld] %s disconnected\n", (long)getpid(), client);
+                return 1;
+            }
+
+            if (handle_request(fd_active, &request) == -1) {
+                fprintf(stderr, "[%ld] Failed to handle the client request. Closing connection...\n", (long)getpid());
+                fprintf(stderr, "[%ld] %s disconnected\n", (long)getpid(), client);
+                return 1;
+            }
+
+            fprintf(stderr, "[%ld] %s disconnected\n", (long)getpid(), client);
+            return 0;
+
+
         }
         
         // -----------------------------------------------------------------------------
@@ -97,6 +124,23 @@ int main(int argc, char** argv)
 
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

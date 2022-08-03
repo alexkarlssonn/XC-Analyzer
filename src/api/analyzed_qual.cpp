@@ -1,8 +1,9 @@
 
 #include "api.h"
 
-#include "../handle_client/load_resource.h"
-#include "../handle_client/send_http_response.h"
+//#include "../handle_client/load_resource.h"
+//#include "../handle_client/send_http_response.h"
+#include "../Response.h"
 #include "../libs/cJSON.h"
 #include "../util/StringUtil.h"
 #include <stdio.h>
@@ -280,7 +281,7 @@ int api_getAnalyzedResults_qual(int socket, char* fiscode_str)
 
                     // If this is not the requested race, then skip all the fields for the current race
                     if (currentResult_raceid != raceids[i]) {
-                        for (int i = 0; i < number_of_ranks; i++) {
+                        for (int j = 0; j < number_of_ranks; j++) {
                             currentByte_results += 18;  
                             int string_counter = 0; 
                             while (string_counter < 3 && currentByte_results < buffer_results_size) {
@@ -293,7 +294,7 @@ int api_getAnalyzedResults_qual(int socket, char* fiscode_str)
                     else 
                     {
                         // The requested race was found, loop though all its ranks and try to find the requested athlete
-                        for (int i = 0; i < number_of_ranks; i++) 
+                        for (int j = 0; j < number_of_ranks; j++) 
                         {
                             // If the next 16 bytes can be read from the buffer, then start reading the relevant fields
                             if (currentByte_results + 18 >= buffer_results_size) break;

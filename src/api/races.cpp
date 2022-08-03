@@ -2,8 +2,9 @@
 
 #include "api.h"
 
-#include "../handle_client/load_resource.h"
-#include "../handle_client/send_http_response.h"
+//#include "../handle_client/load_resource.h"
+//#include "../handle_client/send_http_response.h"
+#include "../Response.h"
 #include "../libs/cJSON.h"
 #include "../util/StringUtil.h"
 #include <ctype.h>
