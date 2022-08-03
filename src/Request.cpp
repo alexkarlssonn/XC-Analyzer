@@ -165,21 +165,52 @@ int read_and_parse_request(int socket, Request* request)
         if ((filepath = (char*) malloc(sizeof(char) * PATH_MAX_SIZE)) == 0) 
         {
             send_http_response(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Server Error: Failed to parse the request\n\0");
-            fprintf(stderr, "[%ld] Failed to allocate memory for the requested filepath\n", (long)getpid());
+            fprintf(stderr, "[%ld] Failed to allocate memory for the requested filepath: %s\n", (long)getpid(), path);
             if (buffer) {
                 free(buffer);
             }
             return -1;
         }
 
-        //
-        // TODO: Consider implementing a controller that maps the requested paths to a physical filepath on the server
-        //
+        
+        fprintf(stderr, "[%ld] path: %s\n", (long)getpid(), path);
+
+        // Map the requested path to a physical resource
         strcpy(filepath, RESOURCE_PATH);
-        if (path == 0 || (strlen(path) == 1 && path[0] == '/')) {
-            strcat(filepath, DEFAULT_FILE);
-        } else {
-            strncat(filepath, path, (PATH_MAX_SIZE - strlen(RESOURCE_PATH)));
+        
+        // Homepage 
+        if (path != 0 && strcmp(path, "/") == 0) {
+            strcat(filepath, "/homepage/index.html");    
+        }
+        else if (path != 0 && strcmp(path, "/main.js") == 0) {
+            strcat(filepath, "/homepage/main.js");    
+        }
+        else if (path != 0 && strcmp(path, "/style.css") == 0) {
+            strcat(filepath, "/homepage/style.css");    
+        }
+        // Athlete page
+        else if (path != 0 && strcmp(path, "/athlete/style.css") == 0) {
+            strcat(filepath, "/athlete/style.css");
+        }
+        else if (path != 0 && strcmp(path, "/athlete/main.js") == 0) {
+            strcat(filepath, "/athlete/main.js");
+        }
+        else if (path != 0 && strncmp(path, "/athlete/", 9) == 0) {
+            strcat(filepath, "/athlete/index.html");
+        }
+        // Race page
+        else if (path != 0 && strcmp(path, "/race/style.css") == 0) {
+            strcat(filepath, "/race/style.css");
+        } 
+        else if (path != 0 && strcmp(path, "/race/main.js") == 0) {
+            strcat(filepath, "/race/main.js");
+        }
+        else if (path != 0 && strncmp(path, "/race/", 6) == 0) {
+            strcat(filepath, "/race/index.html");
+        }
+        // Resource not found page
+        else {
+            strcat(filepath, NOT_FOUND);
         }
 
         request->type = GET_RESOURCE;
@@ -227,8 +258,10 @@ int handle_request(int socket, Request* request)
         if (load_resource(request->path, &buffer, &buffer_size, &status_code) == -1) 
         {
             if (status_code == 404) {
+                fprintf(stderr, "[%ld] HTTP 404: The requested resource does not exist: %s\n", (long)getpid(), request->path);
                 send_http_response(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: The requested resource does not exist\n\0");
             } else {
+                fprintf(stderr, "[%ld] HTTP 500: Failed to find the requested resource: %s\n", (long)getpid(), request->path);
                 send_http_response(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "500 Server Error: Failed to find the requested resource\n\0");    
             }
             if (buffer != 0) 

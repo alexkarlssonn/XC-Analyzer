@@ -4,6 +4,7 @@
 #define REQUEST_MAX_SIZE 32768
 #define PATH_MAX_SIZE 256
 #define RESOURCE_PATH "./resources"
+#define NOT_FOUND "/not_found/index.html"
 #define DEFAULT_FILE "/index.html"
 
 #define HTTP_GET 1
