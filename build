@@ -6,7 +6,12 @@ TARGET="backend"
 LIBS="./src/libs/Restart.cpp ./src/libs/uici.cpp ./src/libs/cJSON.cpp"
 UTIL="./src/util/StringUtil.cpp ./src/util/RaceTime.cpp"
 API="./src/api/athletes.cpp ./src/api/races.cpp ./src/api/analyzed_qual.cpp ./src/api/validate_parameters.cpp"
-FILES="./src/main.cpp ./src/Request.cpp ./src/Response.cpp ${LIBS} ${UTIL} ${API}" 
+DATABASE="./src/db/RaceResults.cpp ./src/db/RaceInfo.cpp"
+PAGES="./src/pages/Race.cpp"
+SRC="./src/main.cpp ./src/Request.cpp ./src/Response.cpp ./src/LoadFile.cpp"
+
+
+FILES="${SRC} ${LIBS} ${UTIL} ${DATABASE} ${PAGES} ${API}" 
 
 ${CC} ${CFLAGS} ${FILES} -o ${TARGET}
 

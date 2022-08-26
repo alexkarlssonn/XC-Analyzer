@@ -237,6 +237,116 @@ char* RaceTime_ms_to_string(unsigned int time)
 
 /*
  * ----------------------------------------------------------------
+ * Convert a race time in milliseconds to string format that signals a time difference
+ * The string that gets retuned has been dynamically allocated and needs to be freed manually later
+ * Return a pointer to the string that has been dynamically allocated
+ * Returns 0 on failure
+ * ----------------------------------------------------------------
+ */
+char* RaceTimeDiff_ms_to_string(unsigned int time)
+{
+    if (time < 0)
+        return 0;
+
+    int hours = 0;
+    int minutes = 0;
+    int seconds = 0;
+    int ms = time;
+    seconds = ms / 1000;
+    ms %= 1000;
+    minutes = seconds / 60;
+    seconds %= 60;
+    hours = minutes / 60;
+    minutes %= 60;
+
+    StringBuilder string;
+    if ((str_init(&string, 16)) == -1)
+        return 0;
+
+    // Check if time is 0
+    if (time == 0) {
+        str_put(&string, '+');
+        str_put(&string, '0');
+        str_put(&string, '0');
+        str_put(&string, '.');
+        str_put(&string, '0');
+        str_put(&string, '0');
+        str_put(&string, '\0');
+        return string.string; 
+    }
+
+    str_put(&string, '+');
+
+    // Add hours to the string builder 
+    if (hours > 0) {
+        if (hours >= 10) {
+            str_put(&string, ('0' + ((int)(hours / 10))));
+            str_put(&string, ('0' + (hours % 10)));
+            str_put(&string, ':');
+        } else {
+            str_put(&string, ('0' + hours)); 
+            str_put(&string, ':');
+        }
+    }
+
+    // Add minutes to the string builder
+    if (minutes > 0 && minutes < 10) {
+        if (hours > 0) {
+            str_put(&string, '0');
+            str_put(&string, ('0' + minutes));
+            str_put(&string, ':');
+        } else {
+            str_put(&string, ('0' + minutes));
+            str_put(&string, ':');
+        }
+    } 
+    else if (minutes >= 10) {
+        str_put(&string, ('0' + ((int)(minutes / 10))));
+        str_put(&string, ('0' + (minutes % 10)));
+        str_put(&string, ':');
+    }
+    else if (minutes <= 0 && hours > 0) {
+        str_put(&string, '0');
+        str_put(&string, '0');
+        str_put(&string, ':');
+    }
+
+    // Add seconds to the string builder
+    if (seconds <= 0) {
+        str_put(&string, '0');
+        str_put(&string, '0');
+        str_put(&string, '.');
+    } 
+    else if (seconds > 0 && seconds < 10) {
+        str_put(&string, '0');
+        str_put(&string, ('0' + seconds));
+        str_put(&string, '.');
+    } 
+    else {
+        str_put(&string, ('0' + ((int)(seconds / 10))));
+        str_put(&string, ('0' + (seconds % 10)));
+        str_put(&string, '.');
+    }
+
+    // Add milliseconds to the string builder
+    if (ms <= 0)
+        str_put(&string, '0');
+    else {
+        int tenths = (int)(ms / 100);
+        int hundreths = (int) (ms / 10) - (tenths * 10);
+        if (hundreths < 0) hundreths = 0;
+        str_put(&string, ('0' + tenths));
+        str_put(&string, ('0' + hundreths));
+    }
+    
+    str_put(&string, '\0');
+    
+    return string.string; 
+}
+
+
+/*
+ * ----------------------------------------------------------------
  * Converts a percent value as a float, into a string
  * The percentage value should represent how far behind someone is the winner in a race
  * For example, a value of 1.000 means that it's the winning time, and 1.024 means the athlete is 2.4% behinds

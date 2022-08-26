@@ -2,6 +2,7 @@
 #include "Request.h"
 
 #include "Response.h"
+#include "./pages/CreatePages.h"
 #include "./api/api.h"
 #include "./libs/Restart.h"
 #include "./util/StringUtil.h"
@@ -177,27 +178,39 @@ int read_and_parse_request(int socket, Request* request)
 
         // Map the requested path to a physical resource
         strcpy(filepath, RESOURCE_PATH);
-        
+       
         // Homepage 
         if (path != 0 && strcmp(path, "/") == 0) {
             strcat(filepath, "/homepage/index.html");    
+            request->type = GET_RESOURCE;
         }
         else if (path != 0 && strcmp(path, "/main.js") == 0) {
             strcat(filepath, "/homepage/main.js");    
+            request->type = GET_RESOURCE;
         }
         else if (path != 0 && strcmp(path, "/style.css") == 0) {
             strcat(filepath, "/homepage/style.css");    
+            request->type = GET_RESOURCE;
         }
         // Athlete page
         else if (path != 0 && strcmp(path, "/athlete/style.css") == 0) {
             strcat(filepath, "/athlete/style.css");
+            request->type = GET_RESOURCE;
         }
         else if (path != 0 && strcmp(path, "/athlete/main.js") == 0) {
             strcat(filepath, "/athlete/main.js");
+            request->type = GET_RESOURCE;
         }
         else if (path != 0 && strncmp(path, "/athlete/", 9) == 0) {
             strcat(filepath, "/athlete/index.html");
+            request->type = GET_RESOURCE;
         }
+        // Race page
+        else if (path != 0 && strncmp(path, "/race/", 6) == 0) {
+            strcpy(filepath, &(path[5]));
+            request->type = GET_TEMPLATE;
+        }
+        /*
         // Race page
         else if (path != 0 && strcmp(path, "/race/style.css") == 0) {
             strcat(filepath, "/race/style.css");
@@ -208,12 +221,12 @@ int read_and_parse_request(int socket, Request* request)
         else if (path != 0 && strncmp(path, "/race/", 6) == 0) {
             strcat(filepath, "/race/index.html");
         }
+        */
         // Resource not found page
         else {
             strcat(filepath, NOT_FOUND);
         }
 
-        request->type = GET_RESOURCE;
         strncpy(request->path, filepath, PATH_MAX_SIZE);
         if (filepath) {
             free(filepath);
@@ -279,6 +292,58 @@ int handle_request(int socket, Request* request)
             free(buffer);
         return return_value;
     }
+    
+    // TEMPLATES
+    else if (request->type == GET_TEMPLATE && request->method == HTTP_GET)
+    {
+        if (strlen(request->path) < 2) {
+            return -1;
+        }
+
+        /*
+        bool isNumber = false;
+        char* p = &(request->path[1]);
+        while (*p != '\0') {
+            if (is_digit(*p)) {
+                isNumber = true;
+            } else {
+                isNumber = false;
+                break;
+            }
+        }
+
+        if (!isNumber) {
+            return -1;
+        }
+        */
+
+        int raceid = atoi(&(request->path[1]));
+        if (raceid == 0) {
+            return 0;
+        }
+
+
+        char* PageBuffer = 0;
+        int PageBuffer_size = 0;
+        if (CreatePage_RaceResults(raceid, &PageBuffer, &PageBuffer_size) == -1) 
+        {
+            fprintf(stderr, "[%ld] HTTP 500: Failed to create the requested resource for race page: %s\n", (long)getpid(), request->path);
+            send_http_response(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Server Error: Failed to create the requested resource\n\0");    
+            if (PageBuffer) { free(PageBuffer); }
+            return -1;
+        }
+        
+        int return_value = -1;
+        if (send_http_response(socket, 200, CONNECTION_CLOSE, TYPE_HTML, PageBuffer) == 0) {
+            fprintf(stderr, "[%ld] HTTP 200: Found and sent the requested resource successfully: %s\n", (long)getpid(), request->path);
+            return_value = 0;
+        }
+
+        if (PageBuffer) { free(PageBuffer); }
+        return (return_value);
+    }
+
+    // API REQUESTES
     else if (request->type == API_ATHLETE_FISCODE && request->method == HTTP_GET)
     {
         char* parameter = &(request->path[request->parameter_start]);

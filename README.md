@@ -53,7 +53,8 @@ GENERAL TODOS:
 [ ] Remove spaces from search fields before sending request (maybe? think about it some more..)  
 [ ] For all API Calls: On success when they print the success message, they should include the request in that message  
 [ ] Basically what the point above said, but make sure the server prints out relevant, helpfull and accurate messages  
-[ ] When a 404 not found occurs and that specific error page gets sent back, make sure its not sent back with the status code 200 like it is now
+[ ] When a 404 not found occurs and that specific error page gets sent back, make sure its not sent back with the status code 200 like it is now  
+[ ] Try to remove as much javascript logic as possible from the frontend. As much as possible should be constructed at the backend before sending the resources to the client, since the server is much faster then the browser. And it also reduces unnecessary requests/responses between the client and server.    
 
 
 BUGS:  

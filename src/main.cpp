@@ -1,5 +1,7 @@
 
 
+//#include "./pages/CreatePages.h"
+
 //#include "./handle_client/handle_client.h"
 #include "Request.h"
 #include "./libs/Restart.h"
@@ -24,6 +26,19 @@
  */
 int main(int argc, char** argv)
 {
+
+/*    
+    int raceid = 33732;  //36804;
+    char* PageBuffer = 0;
+    int PageBuffer_size = 0;
+    if (CreatePage_RaceResults(raceid, &PageBuffer, &PageBuffer_size) == 0) {
+        fprintf(stderr, "%s\n", PageBuffer);
+    }
+    if (PageBuffer) {
+        free(PageBuffer);
+    }
+*/
+
     int MAX_CANON = 255;
     int fd_listen, fd_active;
     char client[MAX_CANON];
