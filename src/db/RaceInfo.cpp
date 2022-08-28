@@ -14,6 +14,7 @@
  * race_info: The struct that will hold all race information
  *
  * Return 0 on success, and -1 on failure. An error message will be printed to descirbe the error
+ * Returns -2 if the given race could not be found
  * --------------------------------------------------------------------------------------------------
  */
 int LoadFromDatabase_RaceInfo(int raceid, RaceInfo* race_info)
@@ -144,7 +145,7 @@ int LoadFromDatabase_RaceInfo(int raceid, RaceInfo* race_info)
 
     if (!foundRace) {
         fprintf(stderr, "[%ld] Failed to load Race Info from the database: could not find race %d in the database\n", (long)getpid(), raceid);
-        return -1;
+        return -2;
     }
 
     return 0;

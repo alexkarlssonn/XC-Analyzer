@@ -43,7 +43,7 @@ static int WriteToBuffer(char* string, char** buffer, int buffer_size, int* curr
 
 
 
-
+// CAN RETURN -2!
 int CreatePage_RaceResults(int raceid, char** PageBuffer, int* PageBuffer_size)
 {
     if (*PageBuffer != 0) {
@@ -54,9 +54,13 @@ int CreatePage_RaceResults(int raceid, char** PageBuffer, int* PageBuffer_size)
     // -----------------------------------------------------------------------------
     // Load the race data from the database and the html template file
     // -----------------------------------------------------------------------------
+    int res = 0;
     RaceInfo race_info;
-    if (LoadFromDatabase_RaceInfo(raceid, &race_info) == -1) {
-        return -1;  // The LoadFromDatabase function will print the error message
+    if ((res = LoadFromDatabase_RaceInfo(raceid, &race_info)) < 0) {
+        // The LoadFromDatabase function will print the error message
+        // If it returned -1, then it is a server error. 
+        // If it returned -2, then the race was not found
+        return res;  
     }
 
     int number_of_results = 0;

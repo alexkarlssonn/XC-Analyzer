@@ -55,10 +55,17 @@ int Route_RacePage(int socket, Request* request)
     // ----------------------------------------------
     char* PageBuffer = 0;
     int PageBuffer_size = 0;
-    if (CreatePage_RaceResults(raceid, &PageBuffer, &PageBuffer_size) == -1)
+    int res = 0;
+    if ((res = CreatePage_RaceResults(raceid, &PageBuffer, &PageBuffer_size)) < 0)
     {
-        SendHttpResponse(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "Server Error: Failed to create the requested resource");
-        fprintf(stderr, "[%ld] Server Error: Failed to create the race page for the requested raceid: %s\n", (long)getpid(), request->query);
+        if (res == -2) {
+            SendHttpResponse(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "Not Found: The requested race id could not be found");
+            fprintf(stderr, "[%ld] Not Found: Failed to create the race page since the requested raceid could not be found: %s\n", (long)getpid(), request->query);
+        }
+        else {
+            SendHttpResponse(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "Server Error: Failed to create the requested resource");
+            fprintf(stderr, "[%ld] Server Error: Failed to create the race page for the requested raceid: %s\n", (long)getpid(), request->query);
+        }
         if (PageBuffer) { free(PageBuffer); }
         return 0;
     }
