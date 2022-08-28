@@ -1,6 +1,9 @@
 
 #include "Routes.h"
 
+#include "../../db/Database.h"
+#include <stdlib.h>
+
 #include "../Server.h"
 #include "../../util/StringUtil.h"
 #include "../../api/api.h"

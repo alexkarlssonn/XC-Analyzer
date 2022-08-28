@@ -2,6 +2,7 @@
 .DS_Store
 backend
 db/_old_db/*
+tests/*
 # db/
 # convert_database/output/*
 

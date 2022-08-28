@@ -29,7 +29,9 @@ int Route_AthletePage(int socket, Request* request)
         fprintf(stderr, "[%ld] Method Not Allowed: The request path was valid: %s, but the method is not allowed: %s\n", (long)getpid(), request->path, request->method);
         return 0;
     }
-    
+
+
+
     char* file = 0;
     char FILE_INDEX[] = "./resources/athlete/index.html";
     char FILE_STYLE[] = "./resources/athlete/style.css";

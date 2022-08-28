@@ -33,19 +33,20 @@ int HandleClientRequest(int socket, Request* request)
     // ----------------------------------
     // Routes
     // ----------------------------------
+    // Homepage
     if (strcmp(request->path, "/") == 0 || strcmp(request->path, "/style.css") == 0 || strcmp(request->path, "/main.js") == 0)
     {
         return Route_HomePage(socket, request);
     }
-    else if (strcmp(request->path, "/athlete") == 0 || strcmp(request->path, "/athlete/style.css") == 0 || strcmp(request->path, "/athlete/main.js") == 0)
+    if (strcmp(request->path, "/athlete") == 0 || strcmp(request->path, "/athlete/style.css") == 0 || strcmp(request->path, "/athlete/main.js") == 0)
     {
         return Route_AthletePage(socket, request);
     }
-    else if (strcmp(request->path, "/race") == 0)
+    if (strcmp(request->path, "/race") == 0)
     {
         return Route_RacePage(socket, request);
     }
-    else if (does_str_begin_with(request->path, (char*)"/api/"))
+    if (does_str_begin_with(request->path, (char*)"/api/"))
     {
         return Route_Api(socket, request);
     }
