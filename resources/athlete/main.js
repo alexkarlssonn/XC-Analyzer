@@ -66,10 +66,17 @@ window.onload = function()
 
     // Extract the fiscode from the url
     let fiscode = "";
+    let substrings = window.location.href.split("?")
+    if (substrings.length > 1) {
+        fiscode = substrings[1]
+    }
+/*
+    let fiscode = "";
     let substrings = window.location.href.split("/");
     if (substrings.length > 1) {
         fiscode = substrings[substrings.length - 1];
     }
+*/
 
     // Get and display the athlete info
     let url = window.location.protocol + "//" + window.location.host + "/api/athlete/fiscode/" + fiscode;
@@ -122,7 +129,7 @@ window.onload = function()
             {
                 race = races[i];
                 let race_container = document.createElement("a");
-                race_container.setAttribute("href", "http://" + window.location.host + "/race/" + race.raceid);
+                race_container.setAttribute("href", "http://" + window.location.host + "/race?" + race.raceid);
                 race_container.classList.add("race-row");
                 if (i % 2 == 0) {
                     race_container.classList.add("even");

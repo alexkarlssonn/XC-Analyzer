@@ -30,7 +30,7 @@ typedef struct {
     int parameter_start = 0;
 } Request;
 
-bool does_str_begin_with(char* str1, char* str2);  // TODO: Move this function to util folder (String file maybe?)
+//bool does_str_begin_with(char* str1, char* str2);  // TODO: Move this function to util folder (String file maybe?)
 int read_and_parse_request(int socket, Request* request);
 int handle_request(int socket, Request* request);
 int parse_requestline(char* line, int len, char** command, char** server, char** path, char** protocol, char** port);

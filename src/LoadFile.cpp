@@ -8,6 +8,19 @@
 #include <string.h>
 
 
+/**
+ * --------------------------------------------------------------------------------------------------
+ * Load a given file into a buffer
+ *
+ * path: The path to the file to load
+ * buffer: Where the content of the file will be written to
+ * size: The size of the buffer once the content has been loaded
+ *
+ * Returns 0 on success
+ * Returns -1 on internal errors
+ * Returns -2 if the file could not be opened
+ * --------------------------------------------------------------------------------------------------
+ */
 int LoadFile(char* path, char** buffer, int* size)
 {
 	int fd; 
@@ -20,7 +33,7 @@ int LoadFile(char* path, char** buffer, int* size)
 	    if ((fd = r_open2(newpath, O_RDONLY)) == -1) 
 	    {
 	        fprintf(stderr, "[%ld] Failed to open %s: %s\n", (long)getpid(), path, strerror(errno));
-	        return -1;
+	        return -2;
 	    }
 	} 
 	

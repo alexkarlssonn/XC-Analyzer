@@ -4,14 +4,14 @@ CFLAGS="-std=c++11 -O3"
 TARGET="backend"
 
 LIBS="./src/libs/Restart.cpp ./src/libs/uici.cpp ./src/libs/cJSON.cpp"
-UTIL="./src/util/StringUtil.cpp ./src/util/RaceTime.cpp"
-API="./src/api/athletes.cpp ./src/api/races.cpp ./src/api/analyzed_qual.cpp ./src/api/validate_parameters.cpp"
-DATABASE="./src/db/RaceResults.cpp ./src/db/RaceInfo.cpp"
-PAGES="./src/pages/Race.cpp"
-SRC="./src/main.cpp ./src/Request.cpp ./src/Response.cpp ./src/LoadFile.cpp"
+UTIL="./src/util/*.cpp"
+API="./src/api/*.cpp"
+DATABASE="./src/db/*.cpp"
+PAGES="./src/pages/*.cpp"
+SERVER="./src/server/*.cpp ./src/server/routes/*.cpp"
+SRC="./src/main.cpp ./src/LoadFile.cpp"
 
-
-FILES="${SRC} ${LIBS} ${UTIL} ${DATABASE} ${PAGES} ${API}" 
+FILES="${SRC} ${SERVER} ${LIBS} ${UTIL} ${DATABASE} ${PAGES} ${API}" 
 
 ${CC} ${CFLAGS} ${FILES} -o ${TARGET}
 

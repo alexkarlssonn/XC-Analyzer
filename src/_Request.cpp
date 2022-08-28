@@ -23,6 +23,7 @@
  * Returns true if str1 starts with str2, and false if not
  * ---------------------------------------------------------------------------------------
  */
+/*
 bool does_str_begin_with(char* str1, char* str2)
 {
     int str1_size = strlen(str1);
@@ -34,6 +35,7 @@ bool does_str_begin_with(char* str1, char* str2)
     }
     return false;
 }
+*/
 
 
 /**
@@ -131,7 +133,7 @@ int read_and_parse_request(int socket, Request* request)
             strncpy(request->path, path, PATH_MAX_SIZE);
         }
         else if (request->type == 0 && does_str_begin_with(path, (char*)"/api/raceids/fiscode/")) {
-            request->parameter_start = strlen(                          "/api/raceids/fullname/");
+            request->parameter_start = strlen(                          "/api/raceids/fiscode/");
             request->type = API_RACEIDS_FISCODE;
             strncpy(request->path, path, PATH_MAX_SIZE);
         }

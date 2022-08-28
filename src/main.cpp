@@ -1,9 +1,6 @@
 
 
-//#include "./pages/CreatePages.h"
-
-//#include "./handle_client/handle_client.h"
-#include "Request.h"
+#include "./server/Server.h"
 #include "./libs/Restart.h"
 #include "./libs/uici.h"
 #include <errno.h>
@@ -26,19 +23,6 @@
  */
 int main(int argc, char** argv)
 {
-
-/*    
-    int raceid = 33732;  //36804;
-    char* PageBuffer = 0;
-    int PageBuffer_size = 0;
-    if (CreatePage_RaceResults(raceid, &PageBuffer, &PageBuffer_size) == 0) {
-        fprintf(stderr, "%s\n", PageBuffer);
-    }
-    if (PageBuffer) {
-        free(PageBuffer);
-    }
-*/
-
     int MAX_CANON = 255;
     int fd_listen, fd_active;
     char client[MAX_CANON];
@@ -81,49 +65,41 @@ int main(int argc, char** argv)
         {
             fprintf(stderr, "[%ld] Client connected: %s\n", (long)getpid(), client);
             if (r_close(fd_listen) == -1) {
-                fprintf(stderr, "[%ld] Failed to close fd_listen: %s\n", (long)getpid(), strerror(errno));
-                return 1;
-            }
-            
-            
-            /* 
-            char client_message[BUFFER_SIZE];
-            if ((bytes = r_read(fd_active, client_message, BUFFER_SIZE - 1)) == -1) {
-                fprintf(stderr, "[%ld] Failed to read message from server: Closing connection...\n", (long)getpid());
+                fprintf(stderr, "[%ld] Failed to close fd_listen: %s. Closing connection...\n", (long)getpid(), strerror(errno));
                 fprintf(stderr, "[%ld] %s disconnected\n", (long)getpid(), client);
                 return 1;
             }
-            client_message[bytes] = '\0';
             
-            // Handle the message received from the connected client
-            handle_client(fd_active, client_message, bytes + 1);
-
-            fprintf(stderr, "[%ld] %s disconnected\n", (long)getpid(), client);
-            return 0;
-            */
-
-
-            //
-            // TODO: New path. Replace the old path above with this new one once it works.
-            // TODO: Make sure all points of failure displays error messages and sends an http response in a good way
-            //
+            
+            // Read and parse the message received from the client over the socket
             Request request;
-            if (read_and_parse_request(fd_active, &request) == -1) {
-                fprintf(stderr, "[%ld] Failed to read/parse the client request. Closing connection...\n", (long)getpid());
+            if (ReadClientRequest(fd_active, &request) == -1) {
+                fprintf(stderr, "[%ld] Failed to read and parse client request: Closing connection...\n", (long)getpid());
                 fprintf(stderr, "[%ld] %s disconnected\n", (long)getpid(), client);
+                if (request.buffer) { free(request.buffer); }
                 return 1;
             }
 
-            if (handle_request(fd_active, &request) == -1) {
-                fprintf(stderr, "[%ld] Failed to handle the client request. Closing connection...\n", (long)getpid());
+
+            if (request.query) {
+                fprintf(stderr, "[%ld] Client request line: %s %s?%s %s\n", (long)getpid(), request.method, request.path, request.query, request.protocol);
+            } else {
+                fprintf(stderr, "[%ld] Client request line: %s %s %s\n", (long)getpid(), request.method, request.path, request.protocol);
+            }
+
+
+            // Handle the client request and respond to it
+            if (HandleClientRequest(fd_active, &request) == -1) {
+                fprintf(stderr, "[%ld] Failed to handle the client request: Closing connection...\n", (long)getpid());
                 fprintf(stderr, "[%ld] %s disconnected\n", (long)getpid(), client);
+                if (request.buffer) { free(request.buffer); }
                 return 1;
             }
 
+        
             fprintf(stderr, "[%ld] %s disconnected\n", (long)getpid(), client);
+            if (request.buffer) { free(request.buffer); }
             return 0;
-
-
         }
         
         // -----------------------------------------------------------------------------
@@ -139,21 +115,6 @@ int main(int argc, char** argv)
 
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
