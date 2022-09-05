@@ -76,7 +76,6 @@ int main(int argc, char** argv)
             if (ReadClientRequest(fd_active, &request) == -1) {
                 fprintf(stderr, "[%ld] Failed to read and parse client request: Closing connection...\n", (long)getpid());
                 fprintf(stderr, "[%ld] %s disconnected\n", (long)getpid(), client);
-                if (request.buffer) { free(request.buffer); }
                 return 1;
             }
 

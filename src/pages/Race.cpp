@@ -11,39 +11,18 @@
 
 
 /**
- * ------------------------------------------------------------------------------------------------------
- * Writes the bytes inside "string" to "buffer" and updates the value of "currentByte"
+ * -------------------------------------------------------------------------------------------
+ * Dynamically creates the web page for displaying a specific race and the result list
+ * 
+ * raceid: The id of the race to use when creating the page
+ * PageBuffer: The buffer that will store the dynamically generated page. Needs to be manually freed later!
+ * PageBuffer_size: The size of the PageBuffer once it has been created
  *
- * string: The string that you want to write to the buffer. It has to be a null terminated string!
- * buffer: The buffer to write to
- * buffer_size: The size of the memory that has been allocated for buffer
- * currentByte: The byte that is currently being written to at the end of buffer
- *
- * Returns 0 on success, and -1 on failure
- * ------------------------------------------------------------------------------------------------------
+ * Returns 0 on success
+ * Returns -1 on failure
+ * Returns -2 if the given race could not be found in the database
+ * -------------------------------------------------------------------------------------------
  */
-static int WriteToBuffer(char* string, char** buffer, int buffer_size, int* currentByte)
-{
-    if (string == 0 || *buffer == 0 || buffer_size == 0 || (*currentByte >= buffer_size)) {
-        return -1;
-    }
-
-    while (*string != '\0') {
-        if (*currentByte < buffer_size) {
-            (*buffer)[*currentByte] = *string;
-            (*currentByte)++;
-        }
-        string++;
-    }
-
-    return 0;
-}
-
-
-
-
-
-// CAN RETURN -2!
 int CreatePage_RaceResults(int raceid, char** PageBuffer, int* PageBuffer_size)
 {
     if (*PageBuffer != 0) {
@@ -65,14 +44,18 @@ int CreatePage_RaceResults(int raceid, char** PageBuffer, int* PageBuffer_size)
 
     int number_of_results = 0;
     ResultElement* results = 0;
-    if (LoadFromDatabase_RaceResults(raceid, &results, &number_of_results) == -1) {
-        return -1;  // The LoadFromDatabase function will print the error message
+    if ((res = LoadFromDatabase_RaceResults(raceid, &results, &number_of_results)) < 0) {
+        // The LoadFromDatabase function will print the error message
+        // If it returned -1, then it is a server error. 
+        // If it returned -2, then the race was not found
+        if (results) { free(results); }
+        return res;  
     }
 
     char file[] = TEMPLATE_RACE;
     char* buffer = 0;
     int buffer_size = 0;
-    if (LoadFile(file, &buffer, &buffer_size) == -1) {
+    if (LoadFile(file, &buffer, &buffer_size) < 0) {
         // The LoadFile function will print the error message
         if (buffer) { free(buffer); }
         if (results) { free(results); }
@@ -210,11 +193,16 @@ int CreatePage_RaceResults(int raceid, char** PageBuffer, int* PageBuffer_size)
                     // BIB
                     {
                         char div_start[] = "<div class='race-result-field bib-field'>";
+                        char no_bib[] = "-";
                         char bib[16];
                         sprintf(bib, "%u", results[i].bib);
 
                         WriteToBuffer(&(div_start[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
-                        WriteToBuffer(&(bib[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        if (results[i].bib != 0) {
+                            WriteToBuffer(&(bib[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        } else {
+                            WriteToBuffer(&(no_bib[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        }
                         WriteToBuffer(&(div_end[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
                     }
 
@@ -270,7 +258,6 @@ int CreatePage_RaceResults(int raceid, char** PageBuffer, int* PageBuffer_size)
                             WriteToBuffer(&(time[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
                         }
                         WriteToBuffer(&(div_end[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
-
                         if (time) { free(time); }
                     }
 
@@ -284,6 +271,7 @@ int CreatePage_RaceResults(int raceid, char** PageBuffer, int* PageBuffer_size)
                             WriteToBuffer(&(diff[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
                         }
                         WriteToBuffer(&(div_end[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        if (diff) { free(diff); }
                     }
                     
                     // FISPOINTS

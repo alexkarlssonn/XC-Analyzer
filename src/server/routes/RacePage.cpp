@@ -2,7 +2,6 @@
 #include "Routes.h"
 
 #include "../Server.h"
-#include "../../LoadFile.h"
 #include "../../pages/CreatePages.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,10 +41,10 @@ int Route_RacePage(int socket, Request* request)
     if (request->query) {
         raceid = atoi(&(request->query[0]));
     }
-    if (raceid == 0)
+    if (raceid <= 0)
     {
-        SendHttpResponse(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "Not Found: Could not find the page for the requested race");
-        fprintf(stderr, "[%ld] Not Found: Failed to create race page. Not a valid race id was given in the query parameter: %s\n", (long)getpid(), request->query);
+        SendHttpResponse(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "Not Found: Invalid race id");
+        fprintf(stderr, "[%ld] Not Found: Failed to create race page. Invalid race id was given in the query parameter: %s\n", (long)getpid(), request->query);
         return 0;
     }
 

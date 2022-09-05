@@ -3,6 +3,9 @@
 backend
 db/_old_db/*
 tests/*
+
+NOTES
+
 # db/
 # convert_database/output/*
 

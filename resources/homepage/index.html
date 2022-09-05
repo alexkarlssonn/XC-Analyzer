@@ -1,16 +1,144 @@
 <head>
     <title>This is the title!</title>
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
-    <link rel="stylesheet" href="style.css">
+
+<style>
+* {
+    background-color: #121212;
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+
+    -ms-overflow-style: none;  /* Hide scrollbar for IE and Edge */
+    scrollbar-width: none;     /* Hide scrollbar for Firefox */
+}
+*::-webkit-scrollbar { display: none; }  /* Hide scrollbar for Chrome, Safari and Opera */
+
+
+.search-container {
+    background-color: #2a2a2a;
+    color: white;
+    border: solid 0.1rem #000000;
+    border-radius: 1rem;
+    margin: 2.5rem 9rem 1.0rem 9rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+
+.search-header-section {
+    text-align: center;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.search-header-header {
+    font-size: 3rem;
+    font-weight: bold;
+    color: white; /* #0e0075; */
+}
+
+.input-section {
+    font-size: 1.1rem;
+}
+
+.input-section-fiscode {
+    display: flex;
+    justify-content: center;
+}
+
+.input-section-firstname {
+    display: flex;
+    justify-content: center;
+}
+
+.input-section-lastname {
+    display: flex;
+    justify-content: center;
+}
+
+.input-section-label {
+    flex-basis: 6%;
+    max-width: 6%;
+    text-align: left;
+    margin-right: 0.5rem;
+}
+
+.input-section-field {
+    flex-basis: 15%;
+    max-width: 15%;
+    font-size: inherit;
+    background-color: #989898;
+    padding-left: 0.3rem;
+    padding-right: 0.3rem;
+}
+
+.input-section-button {
+    text-align: center;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+.search-button {
+    background-color: #e7e7e7;
+    color: black;
+    font-size: 1.1rem;
+    font-weight: bold;
+    padding: 0.3rem 2.0rem 0.3rem 2.0rem;
+}
+
+
+#search-results {
+    text-align: center;
+    background-color: #313131;
+    color: white;
+    border: solid 0.1rem black;
+    border-radius: 0.5rem;
+    margin: 2.5rem 9rem 1.0rem 9rem;
+    padding: 0.75rem;
+}
+
+div {
+    color: inherit;
+    background-color: inherit;
+}
+a {
+    background-color: inherit;
+}
+:focus {
+  outline-color: transparent;
+  outline-style: none;
+}
+</style>
+
     <script src="main.js"></script>
 </head>
+
+
 <body>
-    <h1>XC-Analyzer</h1>
-    
-    Fiscode: <input type="text" id="input-fiscode"> <br>
-    Firstname: <input type="text" id="input-firstname"> <br>
-    Lastname:  <input type="text" id="input-lastname"> <br>
-    <button id="input-submit">Search</button>
+    <div class="search-container">
+        <div class="search-header-section">
+            <div class="search-header-header">XC-Analyzer</div>
+        </div>
+
+        <div class="input-section">
+            <div class="input-section-fiscode">
+                <div class="input-section-label">Fiscode</div>
+                <input class="input-section-field" type="text" id="input-fiscode"> <br>
+            </div>
+            <div class="input-section-firstname">
+                <div class="input-section-label">Firstname</div>
+                <input class="input-section-field" type="text" id="input-firstname"> <br>
+            </div>
+            <div class="input-section-lastname">
+                <div class="input-section-label">Lastname</div>
+                <input class="input-section-field" type="text" id="input-lastname"> <br>
+            </div>
+            <div class="input-section-button">
+                <button class="search-button" id="input-submit">Search</button>
+            </div>
+        </div>
+
+    </div>
 
     <div id="search-results"></div>
 

@@ -1,9 +1,10 @@
 
 #pragma once
 
-#define DB_ATHLETES       "./db/athletes.bin"
-#define DB_RACE_INFO      "./db/races-info.bin"
-#define DB_RACE_RESULTS   "./db/races-results.bin"
+#define DB_ATHLETES      "./db/athletes.bin"
+#define DB_ATHLETE_RACES "./db/athletes-races.bin"
+#define DB_RACE_INFO     "./db/races-info.bin"
+#define DB_RACE_RESULTS  "./db/races-results.bin"
 
 
 typedef struct {
@@ -42,7 +43,16 @@ typedef struct {
 
 
 int LoadFromDatabase_Athlete(int fiscode, Athlete* athlete);
+int LoadFromDatabase_RaceIds(int fiscode, unsigned int** raceids, int* raceids_size);
 int LoadFromDatabase_RaceInfo(int raceid, RaceInfo* race_info);
 int LoadFromDatabase_RaceResults(int raceid, ResultElement** results, int* results_size);
+
+
+
+
+
+
+
+
 
 

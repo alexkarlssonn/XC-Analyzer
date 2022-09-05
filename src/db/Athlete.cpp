@@ -13,7 +13,9 @@
  * fiscode: The fiscode of the athlete to look for in the database
  * athlete: The structure containing the athlete data
  *
- * Return 0 on success, and -1 on failure. An error message will be printed to descirbe the error
+ * Returns 0 on success
+ * Returns -1 on failure. An error message will be printed to describe the error
+ * Returns -2 if the given athlete could not be found
  * --------------------------------------------------------------------------------------------------
  */
 int LoadFromDatabase_Athlete(int fiscode, Athlete* athlete)
@@ -30,7 +32,7 @@ int LoadFromDatabase_Athlete(int fiscode, Athlete* athlete)
     char file[] = DB_ATHLETES;
     char* buffer = 0;
     int buffer_size = 0;
-    if (LoadFile(file, &buffer, &buffer_size) == -1) {
+    if (LoadFile(file, &buffer, &buffer_size) < 0) {
         if (buffer) {
             free(buffer);
         }
@@ -140,7 +142,7 @@ int LoadFromDatabase_Athlete(int fiscode, Athlete* athlete)
 
     if (!foundAthlete) {
         fprintf(stderr, "[%ld] Failed to load athlete from the database: Could not find fiscode: %d\n", (long)getpid(), fiscode);
-        return -1;
+        return -2;
     }
 
     return 0;

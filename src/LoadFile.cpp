@@ -13,7 +13,7 @@
  * Load a given file into a buffer
  *
  * path: The path to the file to load
- * buffer: Where the content of the file will be written to
+ * buffer: Where the content of the file will be written to. This will be dynamically allocated and needs to be manually freed later!
  * size: The size of the buffer once the content has been loaded
  *
  * Returns 0 on success

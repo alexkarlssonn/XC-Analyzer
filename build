@@ -11,7 +11,7 @@ PAGES="./src/pages/*.cpp"
 SERVER="./src/server/*.cpp ./src/server/routes/*.cpp"
 SRC="./src/main.cpp ./src/LoadFile.cpp"
 
-FILES="${SRC} ${SERVER} ${LIBS} ${UTIL} ${DATABASE} ${PAGES} ${API}" 
+ALL_FILES="${SRC} ${SERVER} ${LIBS} ${UTIL} ${DATABASE} ${PAGES} ${API}" 
 
-${CC} ${CFLAGS} ${FILES} -o ${TARGET}
+${CC} ${CFLAGS} ${ALL_FILES} -o ${TARGET}
 

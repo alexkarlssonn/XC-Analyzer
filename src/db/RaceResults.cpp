@@ -15,7 +15,9 @@
  *          The memory will be allocated if the race was found, and needs to be manuelly freed later
  * results_size: The number of ResultElement that has been stored inside "results" if the race was found
  *
- * Return 0 on success, and -1 on failure. An error message will be printed to descirbe the error
+ * Returns 0 on success
+ * Returns -1 on failure. An error message will be printed to describe the error
+ * Returns -2 if the given race could not be found
  * --------------------------------------------------------------------------------------------------
  */
 int LoadFromDatabase_RaceResults(int raceid, ResultElement** results, int* results_size)
@@ -32,7 +34,7 @@ int LoadFromDatabase_RaceResults(int raceid, ResultElement** results, int* resul
     char file[] = DB_RACE_RESULTS;
     char* buffer = 0;
     int buffer_size = 0;
-    if (LoadFile(file, &buffer, &buffer_size) == -1) {
+    if (LoadFile(file, &buffer, &buffer_size) < 0) {
         if (buffer) {
             free(buffer);
         }
@@ -84,12 +86,16 @@ int LoadFromDatabase_RaceResults(int raceid, ResultElement** results, int* resul
         else
         {
             // Allocate memory for all the results
-            if ((*results = (ResultElement*) malloc(numberOfRanks * sizeof(ResultElement))) == 0) {
-                if (buffer) {
-                    free(buffer);
+            if (numberOfRanks > 0) 
+            {
+                if ((*results = (ResultElement*) malloc(numberOfRanks * sizeof(ResultElement))) == 0) 
+                {
+                    fprintf(stderr, "[%ld] Failed to load Race Results from the database: failed to allocate memory for the results\n", (long)getpid());
+                    if (buffer) {
+                        free(buffer);
+                    }
+                    return -1;
                 }
-                fprintf(stderr, "[%ld] Failed to load Race Results from the database: failed to allocate memory for the results\n", (long)getpid());
-                return -1;
             }
             
             for (int i = 0; i < numberOfRanks; i++)
@@ -161,7 +167,7 @@ int LoadFromDatabase_RaceResults(int raceid, ResultElement** results, int* resul
 
     if (!foundRace) {
         fprintf(stderr, "[%ld] Failed to load Race Results from the database: could not find race %d in the database\n", (long)getpid(), raceid);
-        return -1;
+        return -2;
     }
 
     return 0;
