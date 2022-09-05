@@ -9,6 +9,9 @@
 #define DB_RACE_RESULTS   "./db/races-results.bin"
 
 
+int load_resource(char* path, char** buffer, int* size, int* status_code);
+
+
 /* ===============================================================
  * Api calls for getting athletes
  * Function definitionns can be found inside "athlete.cpp"

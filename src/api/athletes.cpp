@@ -2,9 +2,8 @@
 
 #include "api.h"
 
-//#include "../handle_client/load_resource.h"
-//#include "../handle_client/send_http_response.h"
-#include "../Response.h"
+#include "../server/Server.h"
+//#include "../Response.h"
 #include "../libs/cJSON.h"
 #include "../util/StringUtil.h"
 #include <ctype.h>
@@ -79,7 +78,7 @@ int api_getAthlete_fiscode(int socket, char* fiscode)
     int fiscode_int = validate_and_convert_parameter(fiscode);
     if (fiscode_int <= -1) {
         fprintf(stderr, "[%ld] HTTP 400: Api call failed, invalid parameter\n", (long)getpid());
-        send_http_response(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter\n\0");
+        SendHttpResponse(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter");
         return -1;
     }
     
@@ -92,7 +91,7 @@ int api_getAthlete_fiscode(int socket, char* fiscode)
     int buffer_size = 0;
     int status_code = 500;  // Default status code on failure
     if (load_resource(file, &buffer, &buffer_size, &status_code) == -1) {
-        send_http_response(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource\n\0");
+        SendHttpResponse(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource");
         if (buffer != 0) free(buffer);
         return -1;
     }
@@ -140,7 +139,7 @@ int api_getAthlete_fiscode(int socket, char* fiscode)
     // ------------------------------------------------------------
     if (athlete == NULL) {
         fprintf(stderr, "[%ld] HTTP 404: Could not find the requested athlete\n", (long)getpid());
-        send_http_response(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Could not find the requested athlete\n\0");
+        SendHttpResponse(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Could not find the requested athlete");
         return -1;
     }
 
@@ -150,12 +149,12 @@ int api_getAthlete_fiscode(int socket, char* fiscode)
     char* athlete_str = cJSON_Print(athlete);
     char* response = (char*) malloc((strlen(athlete_str) + 2) * sizeof(char));
     strcpy(response, athlete_str);
-    strcat(response, "\n");  // strcar also adds '\0' at the end
+    //strcat(response, "\n");  // strcar also adds '\0' at the end
     
     if (athlete_str != 0) free(athlete_str);
     cJSON_Delete(athlete);
 
-    if (send_http_response(socket, 200, CONNECTION_CLOSE, TYPE_JSON, response) == -1) {
+    if (SendHttpResponse(socket, 200, CONNECTION_CLOSE, TYPE_JSON, response) == -1) {
         if (response != 0) free(response);
         return -1;
     }
@@ -192,12 +191,12 @@ static int getAthletes_name(int socket, name_t name_type, char* search_str)
     // -----------------------------------------------------------------
     if (search_str == 0 || strlen(search_str) == 0) {
         fprintf(stderr, "[%ld] HTTP 400: Api call failed. Invalid parameter, no search string was given\n", (long)getpid());
-        send_http_response(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter, no search string was given\n\0");
+        SendHttpResponse(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter, no search string was given");
         return -1;
     }
     if (!isalpha(search_str[0])) {
         fprintf(stderr, "[%ld] HTTP 400: Api call failed. Invalid search string\n", (long)getpid());
-        send_http_response(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid search string\n\0");
+        SendHttpResponse(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid search string");
         return -1;
     }
 
@@ -254,7 +253,7 @@ static int getAthletes_name(int socket, name_t name_type, char* search_str)
         // Make sure the substrings are valid names
         if (!isValidNames) {
             fprintf(stderr, "[%ld] HTTP 400: Api call failed, invalid parameter\n", (long)getpid());
-            send_http_response(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter\n\0");
+            SendHttpResponse(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter");
             return -1;
         }
 
@@ -271,7 +270,7 @@ static int getAthletes_name(int socket, name_t name_type, char* search_str)
     int buffer_size = 0;
     int status_code = 500;  // Default status code on failure
     if (load_resource(file, &buffer, &buffer_size, &status_code) == -1) {
-        send_http_response(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource\n\0");
+        SendHttpResponse(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource");
         if (buffer != 0) free(buffer);
         return -1;
     }
@@ -284,7 +283,7 @@ static int getAthletes_name(int socket, name_t name_type, char* search_str)
     if (json_athletes == NULL || json_array == NULL) 
     {
         fprintf(stderr, "[%ld] HTTP 500: Failed to create JSON object\n", (long)getpid());
-        send_http_response(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: Failed to create JSON object\n\0");
+        SendHttpResponse(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: Failed to create JSON object");
         if (json_athletes != 0) cJSON_Delete(json_athletes);
         if (json_array != 0) cJSON_Delete(json_array);
         return -1;
@@ -411,7 +410,7 @@ static int getAthletes_name(int socket, name_t name_type, char* search_str)
     // ------------------------------------------------------------
     if (found_counter <= 0) {
         fprintf(stderr, "[%ld] HTTP 404: Could not find any athletes\n", (long)getpid());
-        send_http_response(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Could not find any athletes\n\0");
+        SendHttpResponse(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Could not find any athletes");
         if (athlete_str != 0) free(athlete_str);
         return -1;
     }
@@ -422,10 +421,10 @@ static int getAthletes_name(int socket, name_t name_type, char* search_str)
     // ------------------------------------------------------------
     char* response = (char*) malloc((strlen(athlete_str) + 2) * sizeof(char));
     strcpy(response, athlete_str);
-    strcat(response, "\n");  // strcar also adds '\0' at the end
+    //strcat(response, "\n");  // strcar also adds '\0' at the end
     if (athlete_str != 0) free(athlete_str);
 
-    if (send_http_response(socket, 200, CONNECTION_CLOSE, TYPE_JSON, response) == -1) {
+    if (SendHttpResponse(socket, 200, CONNECTION_CLOSE, TYPE_JSON, response) == -1) {
         if (response != 0) free(response);
         return -1;
     }

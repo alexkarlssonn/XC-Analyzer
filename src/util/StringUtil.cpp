@@ -2,6 +2,30 @@
 
 #include "StringUtil.h"
 #include <stdlib.h>
+#include <string.h>
+
+
+/**
+ * ---------------------------------------------------------------------------------------
+ * Checks if a string starts with another substring
+ *
+ * str1: The original string to check
+ * str2: The substring to check if str1 start with
+ *
+ * Returns true if str1 starts with str2, and false if not
+ * ---------------------------------------------------------------------------------------
+ */
+bool does_str_begin_with(char* str1, char* str2)
+{
+    int str1_size = strlen(str1);
+    int str2_size = strlen(str2);
+    if (str1_size >= str2_size) {
+        if (strncmp(str1, str2, str2_size) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
 
 
 /* 

@@ -1,0 +1,346 @@
+
+<head>
+	<title>Athlete Page</title>
+    <meta charset="UTF-8">
+
+<style>
+* {
+    color: #ffffff;
+    background-color: #121212;  
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+    
+    -ms-overflow-style: none;  /* Hide scrollbar for IE and Edge */
+    scrollbar-width: none;     /* Hide scrollbar for Firefox */
+}
+*::-webkit-scrollbar { display: none; }  /* Hide scrollbar for Chrome, Safari and Opera */
+
+
+/* ------------------------------------------------------------------ 
+ TOP: ATHLETE INFORMATION
+-------------------------------------------------------------------- */
+.athlete-info-container {
+    background-color: #2a2a2a; 
+    color: white;
+    border: #000000 1px solid;
+    border-radius: 1rem;
+    margin: 2.5rem 3rem 1.0rem 3rem;
+    padding: 0.75rem;
+}
+
+.athlete-info-header {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.athlete-info-bottom {
+    border-top: solid 0.1rem #414141;
+    margin-top: 1.25rem;
+    font-size: 0.85rem;
+    padding-top: 0.25rem;
+}
+
+.athlete-info-bottom a:link {
+    background-color: inherit;
+    color: #99bbff;
+    text-decoration: none;
+}
+.athlete-info-bottom a:visited {
+    background-color: inherit;
+    color: #99bbff;
+    text-decoration: none;
+}
+.athlete-info-bottom a:active {
+    background-color: inherit;
+    color: #99bbff;
+    text-decoration: none;
+}
+.athlete-info-bottom a:hover {
+    background-color: inherit;
+    color: #e6eeff;
+    text-decoration: none;
+}
+
+
+/* ------------------------------------------------------------------ 
+ MENU OPTIONS
+-------------------------------------------------------------------- */
+.menu-selection-container {
+}
+
+.menu-options {
+    min-height: 2rem;
+    margin-left: 1.5rem; 
+    margin-right: 1.5rem;
+    display: flex; 
+    justify-content: center;
+}
+
+.menu-option {
+    user-select: none;
+    text-align: center;
+    border: #000000 solid 0.1rem;
+    border-radius: 0.5rem;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    padding: 0.5rem 1.5rem;
+}
+
+
+/* ------------------------------------------------------------------ 
+ MENU: RESULTS 
+-------------------------------------------------------------------- */
+.menu-results {
+    text-align: center;
+}
+
+
+/* ------------------------------------------------------------------ 
+ MENU: SPRINT QUAL STATISTICS
+-------------------------------------------------------------------- */
+.menu-sprint-stats {
+}
+
+.sprint-section {
+    margin: 2.5rem 3rem 2rem 3rem;
+}
+
+/* ---------- HEADER ----------- */
+.sprint-header-section {
+    background-color: #414141; 
+    color: #ffffff;
+    border-bottom: #121212 0.1rem solid;
+    border-radius: 0.5rem 0.5rem 0 0;
+    min-height: 1.75rem;
+    max-height: 2.50rem;
+    padding-top: 0.5rem; padding-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.sprint-header-field {
+    text-align: center;
+}
+
+/* ---------- LIST OF SPRINT RESULTS ----------- */
+.sprint-results {
+    font-size: 0.9em;
+}
+
+.sprint-results a:link { text-decoration: none; }
+.sprint-results a:visited { text-decoration: none; }
+.sprint-results a:active { text-decoration: none; }
+.sprint-results a:hover { text-decoration: none; }
+
+/* ---------- RANK IN SPRINT RESULT LIST ----------- */
+.sprint-result {
+    border-bottom: 0.1rem solid #121212;
+    display: flex;
+    align-items: center;
+    min-height: 3rem;
+}
+
+.sprint-result.odd {
+    color: #cccccc;
+    background-color: #2a2a2a  
+}
+
+.sprint-result.even {
+    color: #cccccc;
+    background-color: #222222  
+}
+
+.sprint-result-field {
+    text-align: center;
+}
+
+.sprint-result-field.raceid-field {
+    color: #808080; 
+}
+.sprint-result-field.category-field {
+    color: #808080;
+}
+.sprint-result-field.participants-field {
+    color: #808080;
+}
+
+.sprint-result-field.rank-field {
+    font-weight: bold;
+}
+
+.date-field { flex-basis: 8%; max-width: 8%; }
+.raceid-field { flex-basis: 5%; max-width: 5%; }
+.location-field { flex-basis: 19%; max-width: 19%; text-align: left; padding-left: 1rem; }
+.category-field { flex-basis: 19%; max-width: 19%; text-align: left; }
+.participants-field { flex-basis: 9%; max-width: 9%; } 
+.rank-field { flex-basis: 6%; max-width: 6%; }
+.time-field { flex-basis: 6%; max-width: 6%; }
+.diff-field { flex-basis: 6%; max-width: 6%; }
+.diffpercentage-field { flex-basis: 6%; max-width: 6%; }
+.fispoints-field { flex-basis: 6%; max-width: 6%; }
+.avg-field { flex-basis: 10%; max-width: 10%; }
+
+
+/* ------------------------------------------------------------------ 
+ MENU: FISPOINTS
+-------------------------------------------------------------------- */
+.menu-fispoints {
+    text-align: center;
+}
+
+
+/* ------------------------------------------------------------------ 
+ OVERRIDE DEFAULT VALUES
+-------------------------------------------------------------------- */
+div {
+    color: inherit;
+    background-color: inherit;
+}
+</style>
+
+
+<script>
+window.onload = function()
+{
+    const BG_NOT_SELECTED = "#313131";
+    const BG_SELECTED = "#bb86fc";  // "#03dac5";
+    const TEXT_NOT_SELECTED = "#ffffff";
+    const TEXT_SELECTED = "#000000";
+
+    // Add click listeners to the menu options
+    let option_results = document.getElementById("menu-option-results");
+    let option_statsSprint = document.getElementById("menu-option-stats-sprint");
+    let option_fispoints = document.getElementById("menu-option-fispoints");
+    let menu_results = document.getElementById("menu-results");
+    let menu_statsSprint = document.getElementById("menu-sprint-stats");
+    let menu_fispoints = document.getElementById("menu-fispoints");
+
+    // Default selected menu
+    option_results.style.backgroundColor = BG_NOT_SELECTED;
+    option_statsSprint.style.backgroundColor = BG_SELECTED;
+    option_fispoints.style.backgroundColor = BG_NOT_SELECTED;
+    option_results.style.color = TEXT_NOT_SELECTED;
+    option_statsSprint.style.color = TEXT_SELECTED;
+    option_fispoints.style.color = TEXT_NOT_SELECTED;
+    menu_results.style.display = "none";
+    menu_statsSprint.style.display = "block";
+    menu_fispoints.style.display = "none";
+
+    option_results.addEventListener("click", function(event) {
+        option_results.style.backgroundColor = BG_SELECTED;
+        option_statsSprint.style.backgroundColor = BG_NOT_SELECTED;
+        option_fispoints.style.backgroundColor = BG_NOT_SELECTED;
+        option_results.style.color = TEXT_SELECTED;
+        option_statsSprint.style.color = TEXT_NOT_SELECTED;
+        option_fispoints.style.color = TEXT_NOT_SELECTED;
+        menu_results.style.display = "block";
+        menu_statsSprint.style.display = "none";
+        menu_fispoints.style.display = "none";
+    });
+    option_statsSprint.addEventListener("click", function(event) {
+        option_results.style.backgroundColor = BG_NOT_SELECTED;
+        option_statsSprint.style.backgroundColor = BG_SELECTED;
+        option_fispoints.style.backgroundColor = BG_NOT_SELECTED;
+        option_results.style.color = TEXT_NOT_SELECTED;
+        option_statsSprint.style.color = TEXT_SELECTED;
+        option_fispoints.style.color = TEXT_NOT_SELECTED;
+        menu_results.style.display = "none";
+        menu_statsSprint.style.display = "block";
+        menu_fispoints.style.display = "none";
+    });
+    option_fispoints.addEventListener("click", function(event) {
+        option_results.style.backgroundColor = BG_NOT_SELECTED;
+        option_statsSprint.style.backgroundColor = BG_NOT_SELECTED;
+        option_fispoints.style.backgroundColor = BG_SELECTED;
+        option_results.style.color = TEXT_NOT_SELECTED;
+        option_statsSprint.style.color = TEXT_NOT_SELECTED;
+        option_fispoints.style.color = TEXT_SELECTED;
+        menu_results.style.display = "none";
+        menu_statsSprint.style.display = "none";
+        menu_fispoints.style.display = "block";
+    });
+
+    // Add inks to the results elements in the sprint stats list
+    let sprint_results_div = document.getElementsByClassName("sprint-results");
+    if (sprint_results_div && sprint_results_div.length > 0)
+    {
+        let results = sprint_results_div[0];
+        for (let i = 0; i < results.children.length; i++)
+        {
+            let child = results.children[i];
+            let raceid = null;
+            for (let j = 0; j < child.children.length; j++) {
+                if (child.children[j].className.includes("raceid-field")) {
+                    raceid = child.children[j].innerHTML;
+                    break;
+                }
+            }
+            if (raceid) {
+                let url = "../race?" + raceid;
+                child.href = url;
+            }
+        }
+    }
+}
+</script>
+</head>
+
+
+
+<!-- ALL PLACEHOLDERS ARE REPLACED BY THE SERVER -->
+<body>
+	<div class="athlete-info-container">
+		<div class="athlete-info-header">@{ATHLETE_FIRSTNAME} @{ATHLETE_LASTNAME}</div>
+		<div>@{ATHLETE_CLUB} | @{ATHLETE_NATION}</div>
+		<div>FIS Code: @{ATHLETE_FISCODE}</div>
+		<div>Birthdate: @{ATHLETE_BIRTHDATE}</div>
+		<div>Gender: @{ATHLETE_GENDER}</div>
+		<div class="athlete-info-bottom">
+			<a href="https://www.fis-ski.com/DB/general/athlete-biography.html?sectorcode=CC&competitorid=@{ATHLETE_COMPID}">FIS Website</a>
+		</div>
+	</div>
+
+	<div class="menu-selection-container">
+        <div class="menu-options">
+            <div class="menu-option" id="menu-option-results">Results</div>
+            <div class="menu-option" id="menu-option-stats-sprint">Sprint Statistics</div>
+            <div class="menu-option" id="menu-option-fispoints">FIS Points</div>
+        </div>	
+	</div>
+
+	<div class="selected-menu-container">
+        <!-- MENU #1: LIST OF RACES -->
+        <div class="menu-results" id="menu-results">Races</div>
+
+		<!-- MENU #3: FIS POINTES HISTORY -->
+        <div class="menu-fispoints" id="menu-fispoints">Fispoints</div>
+
+		<!-- MENU #2: SPRINT STATISTICS -->
+        <div class="menu-sprint-stats" id="menu-sprint-stats">
+            <div class="sprint-section">
+                <div class="sprint-header-section">
+                    <div class="sprint-header-field date-field">Date</div>
+                    <div class="sprint-header-field raceid-field">Race ID</div>
+                    <div class="sprint-header-field location-field">Location</div>
+                    <div class="sprint-header-field category-field">Category</div>
+                    <div class="sprint-header-field participants-field">Participants</div>
+                    <div class="sprint-header-field rank-field">Rank</div>
+                    <div class="sprint-header-field time-field">Time</div>
+                    <div class="sprint-header-field diff-field">Diff.</div>
+                    <div class="sprint-header-field diffpercentage-field">Diff.</div>
+                    <div class="sprint-header-field fispoints-field">FIS Points</div>
+                    <div class="sprint-header-field avg-field">Avg. FIS Points</div>
+                </div>
+                <div class="sprint-results">
+                    @{ANALYZED_RACES_SPRINT}
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+
+
+

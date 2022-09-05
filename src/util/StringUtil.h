@@ -5,6 +5,7 @@
 /* ---------------------------------------------------
  * General string utility functions
  * -------------------------------------------------- */
+bool does_str_begin_with(char* str1, char* str2);
 int getStringSize(char* str);
 int is_digit(char ch);
 

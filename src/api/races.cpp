@@ -2,9 +2,8 @@
 
 #include "api.h"
 
-//#include "../handle_client/load_resource.h"
-//#include "../handle_client/send_http_response.h"
-#include "../Response.h"
+#include "../server/Server.h"
+//#include "../Response.h"
 #include "../libs/cJSON.h"
 #include "../util/StringUtil.h"
 #include <ctype.h>
@@ -39,7 +38,7 @@ int api_getAthletesRaceids(int socket, char* fiscode)
     int fiscode_int = validate_and_convert_parameter(fiscode);
     if (fiscode_int <= -1) {
         fprintf(stderr, "[%ld] HTTP 400: Api call failed, invalid parameter\n", (long)getpid());
-        send_http_response(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter\n\0");
+        SendHttpResponse(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter");
         return -1;
     }
     
@@ -52,7 +51,7 @@ int api_getAthletesRaceids(int socket, char* fiscode)
     int buffer_size = 0;
     int status_code = 500;  // Default status code on failure
     if (load_resource(file, &buffer, &buffer_size, &status_code) == -1) {
-        send_http_response(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource\n\0");
+        SendHttpResponse(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource");
         if (buffer != 0) free(buffer);
         return -1;
     }
@@ -66,7 +65,7 @@ int api_getAthletesRaceids(int socket, char* fiscode)
     if (json_races == NULL || json_array == NULL) 
     {
         fprintf(stderr, "[%ld] HTTP 500: Failed to create JSON object\n", (long)getpid());
-        send_http_response(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: Failed to create JSON object\n\0");
+        SendHttpResponse(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: Failed to create JSON object");
         if (json_races != 0) cJSON_Delete(json_races);
         if (json_array != 0) cJSON_Delete(json_array);
         return -1;
@@ -139,7 +138,7 @@ int api_getAthletesRaceids(int socket, char* fiscode)
     // ------------------------------------------------------------
     if (!foundAthlete) {
         fprintf(stderr, "[%ld] HTTP 404: Could not find the requested athlete\n", (long)getpid());
-        send_http_response(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Could not find the requested athlete\n\0");
+        SendHttpResponse(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Could not find the requested athlete");
         if (races_str != 0) free(races_str);
         return -1;
     }
@@ -150,10 +149,10 @@ int api_getAthletesRaceids(int socket, char* fiscode)
     // ------------------------------------------------------------
     char* response = (char*) malloc((strlen(races_str) + 2) * sizeof(char));
     strcpy(response, races_str);
-    strcat(response, "\n");  // strcar also adds '\0' at the end
+    //strcat(response, "\n");  // strcar also adds '\0' at the end
     if (races_str != 0) free(races_str);
 
-    if (send_http_response(socket, 200, CONNECTION_CLOSE, TYPE_JSON, response) == -1) {
+    if (SendHttpResponse(socket, 200, CONNECTION_CLOSE, TYPE_JSON, response) == -1) {
         if (response != 0) free(response);
         return -1;
     }
@@ -190,7 +189,7 @@ int api_getRaceInfo(int socket, char* raceid)
     int raceid_int = validate_and_convert_parameter(raceid);
     if (raceid_int <= -1) {
         fprintf(stderr, "[%ld] HTTP 400: Api call failed, invalid parameter\n", (long)getpid());
-        send_http_response(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter\n\0");
+        SendHttpResponse(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter");
         return -1;
     }
 
@@ -203,7 +202,7 @@ int api_getRaceInfo(int socket, char* raceid)
     int buffer_size = 0;
     int status_code = 500;  // Default status code on failure
     if (load_resource(file, &buffer, &buffer_size, &status_code) == -1) {
-        send_http_response(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource\n\0");
+        SendHttpResponse(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource");
         if (buffer != 0) free(buffer);
         return -1;
     }
@@ -351,7 +350,7 @@ int api_getRaceInfo(int socket, char* raceid)
    // ------------------------------------------------------------
    if (json_raceinfo == NULL) {
        fprintf(stderr, "[%ld] HTTP 404: Could not find the requested race\n", (long)getpid());
-       send_http_response(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Could not find the requested race\n\0");
+       SendHttpResponse(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Could not find the requested race");
        return -1;
    }
 
@@ -362,12 +361,12 @@ int api_getRaceInfo(int socket, char* raceid)
    char* raceinfo_str = cJSON_Print(json_raceinfo);
    char* response = (char*) malloc((strlen(raceinfo_str) + 2) * sizeof(char));
    strcpy(response, raceinfo_str);
-   strcat(response, "\n");  // strcar also adds '\0' at the end
+   //strcat(response, "\n");  // strcar also adds '\0' at the end
    
    if (raceinfo_str != 0) free(raceinfo_str);
    cJSON_Delete(json_raceinfo);
 
-   if (send_http_response(socket, 200, CONNECTION_CLOSE, TYPE_JSON, response) == -1) {
+   if (SendHttpResponse(socket, 200, CONNECTION_CLOSE, TYPE_JSON, response) == -1) {
        if (response != 0) free(response);
        return -1;
    }
@@ -404,7 +403,7 @@ int api_getRaceResult(int socket, char* raceid)
     int raceid_int = validate_and_convert_parameter(raceid);
     if (raceid_int <= -1) {
         fprintf(stderr, "[%ld] HTTP 400: Api call failed, invalid parameter\n", (long)getpid());
-        send_http_response(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter\n\0");
+        SendHttpResponse(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter");
         return -1;
     }
 
@@ -417,7 +416,7 @@ int api_getRaceResult(int socket, char* raceid)
     int buffer_size = 0;
     int status_code = 500;  // Default status code on failure
     if (load_resource(file, &buffer, &buffer_size, &status_code) == -1) {
-        send_http_response(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource\n\0");
+        SendHttpResponse(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource");
         if (buffer != 0) free(buffer);
         return -1;
     }
@@ -431,7 +430,7 @@ int api_getRaceResult(int socket, char* raceid)
     if (json_race == NULL || json_resultsarray == NULL) 
     {
         fprintf(stderr, "[%ld] HTTP 500: Failed to create JSON object\n", (long)getpid());
-        send_http_response(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: Failed to create JSON object\n\0");
+        SendHttpResponse(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: Failed to create JSON object");
         if (json_race != 0) cJSON_Delete(json_race);
         if (json_resultsarray != 0) cJSON_Delete(json_resultsarray);
         return -1;
@@ -602,7 +601,7 @@ int api_getRaceResult(int socket, char* raceid)
     // ------------------------------------------------------------
     if (!foundRace) {
         fprintf(stderr, "[%ld] HTTP 404: Could not find the requested race\n", (long)getpid());
-        send_http_response(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Could not find the requested race\n\0");
+        SendHttpResponse(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Could not find the requested race");
         if (race_str != 0) free(race_str);
         return -1;
     }
@@ -613,10 +612,10 @@ int api_getRaceResult(int socket, char* raceid)
     // ------------------------------------------------------------------
     char* response = (char*) malloc((strlen(race_str) + 2) * sizeof(char));
     strcpy(response, race_str);
-    strcat(response, "\n");  // strcar also adds '\0' at the end
+    //strcat(response, "\n");  // strcar also adds '\0' at the end
     if (race_str != 0) free(race_str);
 
-    if (send_http_response(socket, 200, CONNECTION_CLOSE, TYPE_JSON, response) == -1) {
+    if (SendHttpResponse(socket, 200, CONNECTION_CLOSE, TYPE_JSON, response) == -1) {
         if (response != 0) free(response);
         return -1;
     }

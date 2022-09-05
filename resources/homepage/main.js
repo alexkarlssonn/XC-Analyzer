@@ -117,7 +117,7 @@ window.onload = function()
                         search_results.appendChild(div);
                         div.innerHTML = athletes[i].fiscode + ", " + athletes[i].firstname + " " + athletes[i].lastname;
                         let a = document.createElement("a");
-                        a.setAttribute("href", window.location.href + "athlete/" + athletes[i].fiscode);
+                        a.setAttribute("href", window.location.href + "athlete?" + athletes[i].fiscode);
                         a.innerHTML = "Link";
                         div.appendChild(a);
                     }
@@ -126,7 +126,7 @@ window.onload = function()
                     search_results.appendChild(div);
                     div.innerHTML = json.fiscode + ", " + json.firstname + " " + json.lastname;
                     let a = document.createElement("a");
-                    a.setAttribute("href", window.location.href + "athlete/" + json.fiscode);
+                    a.setAttribute("href", window.location.href + "athlete?" + json.fiscode);
                     a.innerHTML = "Link";
                     div.appendChild(a);
                 }

@@ -1,9 +1,0 @@
-
-CC="g++"
-CFLAGS="-std=c++11 -w"
-FILES="main.cpp ../src/libs/*.cpp ../src/handle_client/*.cpp ../src/util/*.cpp ../src/api/*.cpp"
-TARGET="TEST_PROGRAM"
-
-${CC} ${CFLAGS} ${FILES} -o ${TARGET}
-
-

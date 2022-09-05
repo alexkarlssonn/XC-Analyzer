@@ -1,9 +1,8 @@
 
 #include "api.h"
 
-//#include "../handle_client/load_resource.h"
-//#include "../handle_client/send_http_response.h"
-#include "../Response.h"
+#include "../server/Server.h"
+//#include "../Response.h"
 #include "../libs/cJSON.h"
 #include "../util/StringUtil.h"
 #include <stdio.h>
@@ -36,7 +35,7 @@ int api_getAnalyzedResults_qual(int socket, char* fiscode_str)
     int fiscode_int = validate_and_convert_parameter(fiscode_str);
     if (fiscode_int <= -1) {
         fprintf(stderr, "[%ld] HTTP 400: Api call failed, invalid parameter\n", (long)getpid());
-        send_http_response(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter\n\0");
+        SendHttpResponse(socket, 400, CONNECTION_CLOSE, TYPE_HTML, "400 Bad Request: Invalid parameter");
         return -1;
     }
 
@@ -49,7 +48,7 @@ int api_getAnalyzedResults_qual(int socket, char* fiscode_str)
     int buffer_size = 0;
     int status_code = 500;  // Default status code on failure
     if (load_resource(file_races, &buffer, &buffer_size, &status_code) == -1) {
-        send_http_response(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource\n\0");
+        SendHttpResponse(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource");
         if (buffer != 0) free(buffer);
         return -1;
     }
@@ -121,7 +120,7 @@ int api_getAnalyzedResults_qual(int socket, char* fiscode_str)
     // ------------------------------------------------------------
     if (raceids == 0 || numberOfRaces == 0) {
         fprintf(stderr, "[%ld] HTTP 404: Could not find any races for the requested athlete\n", (long)getpid());
-        send_http_response(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Could not find any races for the requested athlete\n\0");
+        SendHttpResponse(socket, 404, CONNECTION_CLOSE, TYPE_HTML, "404 Not Found: Could not find any races for the requested athlete");
         if (raceids != 0) free(raceids);
         return -1;
     }
@@ -137,7 +136,7 @@ int api_getAnalyzedResults_qual(int socket, char* fiscode_str)
     buffer_size = 0;
     status_code = 500;  // Default status code on failure
     if (load_resource(file_info, &buffer, &buffer_size, &status_code) == -1) {
-        send_http_response(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource\n\0");
+        SendHttpResponse(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource");
         if (buffer != 0) free(buffer);
         return -1;
     }
@@ -147,7 +146,7 @@ int api_getAnalyzedResults_qual(int socket, char* fiscode_str)
     int buffer_results_size = 0;
     status_code = 500;  // Default status code on failure
     if (load_resource(file_results, &buffer_results, &buffer_results_size, &status_code) == -1) {
-        send_http_response(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource\n\0");
+        SendHttpResponse(socket, status_code, CONNECTION_CLOSE, TYPE_HTML, "Failed to load requested resource");
         if (buffer_results != 0) free(buffer_results);
         return -1;
     }
@@ -161,7 +160,7 @@ int api_getAnalyzedResults_qual(int socket, char* fiscode_str)
     if (json_parent == NULL || json_array == NULL) 
     {
         fprintf(stderr, "[%ld] HTTP 500: Failed to create JSON object\n", (long)getpid());
-        send_http_response(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: Failed to create JSON object\n\0");
+        SendHttpResponse(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: Failed to create JSON object");
         if (json_parent != 0) cJSON_Delete(json_parent);
         if (json_array != 0) cJSON_Delete(json_array);
         return -1;
@@ -432,7 +431,7 @@ int api_getAnalyzedResults_qual(int socket, char* fiscode_str)
     // ------------------------------------------------------------
     if (races_counter == 0) {
         fprintf(stderr, "[%ld] HTTP 500: No races were analyzed\n", (long)getpid());
-        send_http_response(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: No races were analyzed\n\0");
+        SendHttpResponse(socket, 500, CONNECTION_CLOSE, TYPE_HTML, "500 Internal Server Error: No races were analyzed");
         if (races_str != 0) free(races_str);
         return -1;
     }
@@ -443,10 +442,10 @@ int api_getAnalyzedResults_qual(int socket, char* fiscode_str)
     // ------------------------------------------------------------------
     char* response = (char*) malloc((strlen(races_str) + 2) * sizeof(char));
     strcpy(response, races_str);
-    strcat(response, "\n");  // strcar also adds '\0' at the end
+    //strcat(response, "\n");  // strcar also adds '\0' at the end
     if (races_str != 0) free(races_str);
 
-    if (send_http_response(socket, 200, CONNECTION_CLOSE, TYPE_JSON, response) == -1) {
+    if (SendHttpResponse(socket, 200, CONNECTION_CLOSE, TYPE_JSON, response) == -1) {
         if (response != 0) free(response);
         return -1;
     }

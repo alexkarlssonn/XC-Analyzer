@@ -62,15 +62,21 @@ function convert_ms_to_time(ms)
 window.onload = function() 
 {
     let athlete_info = document.getElementById("athlete-info");
-    let dump = document.getElementById("dump");
-    
+    let races_div = document.getElementById("races");    
 
     // Extract the fiscode from the url
+    let fiscode = "";
+    let substrings = window.location.href.split("?")
+    if (substrings.length > 1) {
+        fiscode = substrings[1]
+    }
+/*
     let fiscode = "";
     let substrings = window.location.href.split("/");
     if (substrings.length > 1) {
         fiscode = substrings[substrings.length - 1];
     }
+*/
 
     // Get and display the athlete info
     let url = window.location.protocol + "//" + window.location.host + "/api/athlete/fiscode/" + fiscode;
@@ -109,7 +115,9 @@ window.onload = function()
     });
 
    
-    
+
+
+
     // Get an display the analyzed data
     url = window.location.protocol + "//" + window.location.host + "/api/analyze/qual/fiscode/" + fiscode;
     http_async("GET", url, function(body, status_code) {
@@ -120,57 +128,84 @@ window.onload = function()
             for (let i = 0; i < races.length; i++) 
             {
                 race = races[i];
-                
-                let raceid_div = document.createElement("div");
-                dump.appendChild(raceid_div);
-                raceid_div.innerHTML = race.raceid;
+                let race_container = document.createElement("a");
+                race_container.setAttribute("href", "http://" + window.location.host + "/race?" + race.raceid);
+                race_container.classList.add("race-row");
+                if (i % 2 == 0) {
+                    race_container.classList.add("even");
+                } else {
+                    race_container.classList.add("odd");
+                }
+
+
+                let checkbox_div = document.createElement("div");
+                race_container.appendChild(checkbox_div);
+                checkbox_div.classList.add("race-row-element");
+                checkbox_div.style.cssText += "flex-basis:5%;max-width:5%;min-height:3rem;";
+                let checkbox = document.createElement("input");
+                checkbox_div.appendChild(checkbox);
+                checkbox.type = "checkbox";
+                checkbox.id = "checkbox-" + race.raceid;
+                checkbox.style.cssText += "min-width:50%;;min-height:3rem;"
 
                 let date_div = document.createElement("div");
-                dump.appendChild(date_div);
+                race_container.appendChild(date_div);
                 date_div.innerHTML = race.date;
+                date_div.classList.add("race-row-element");
+                date_div.style.cssText += "flex-basis:10%;max-width:10%;";
 
                 let location_div = document.createElement("div");
-                dump.appendChild(location_div);
-                location_div.innerHTML = race.nation + ", " + race.location; 
+                race_container.appendChild(location_div);
+                location_div.innerHTML = race.location; 
+                location_div.classList.add("race-row-element");
+                location_div.style.cssText += "flex-basis:10%;max-width:10%;";
+
+                let nation_div = document.createElement("div");
+                race_container.appendChild(nation_div);
+                nation_div.innerHTML = race.nation;
+                nation_div.classList.add("race-row-element");
+                nation_div.style.cssText += "flex-basis:10%;max-width:10%";
 
                 let type_div = document.createElement("div");
-                dump.appendChild(type_div);
-                type_div.innerHTML = race.category + ", " + race.type;
+                race_container.appendChild(type_div);
+                type_div.innerHTML = race.category;
+                type_div.classList.add("race-row-element");
+                type_div.style.cssText += "flex-basis:25%;max-width:25%;";
 
                 let rank_div = document.createElement("div");
-                dump.appendChild(rank_div);
-                rank_div.innerHTML = "Rank: " + race.rank;
-    
+                race_container.appendChild(rank_div);
+                rank_div.innerHTML = race.rank;
+                rank_div.classList.add("race-row-element");
+                rank_div.style.cssText += "flex-basis:10%;max-width:10%;";
+
                 let time_div = document.createElement("div");
                 let time = convert_ms_to_time(race.time);
-                dump.appendChild(time_div);
-                time_div.innerHTML = "Time: " + time;
+                race_container.appendChild(time_div);
+                time_div.innerHTML = time;
+                time_div.classList.add("race-row-element");
+                time_div.style.cssText += "flex-basis:10%;max-width:10%;";
 
                 let diff_div = document.createElement("div");
                 let diff = convert_ms_to_time(race.diff);
                 if (race.diff > 0) { diff = "+" + diff; }
-                dump.appendChild(diff_div);
-                diff_div.innerHTML = "Diff: " + diff;
+                race_container.appendChild(diff_div);
+                diff_div.innerHTML = diff;
+                diff_div.classList.add("race-row-element");
+                diff_div.style.cssText += "flex-basis:10%;max-width:10%;";
 
                 let diff_percentage_div = document.createElement("div");
                 let diff_percentage = ((race["diff percentage"] - 1) * 100).toFixed(2);
                 if (race["diff percentage"] > 1) { diff_percentage = "+" + diff_percentage; }
-                dump.appendChild(diff_percentage_div);
-                diff_percentage_div.innerHTML = "Diff percentage: " + diff_percentage + "%";
+                race_container.appendChild(diff_percentage_div);
+                diff_percentage_div.innerHTML = diff_percentage + "%";
+                diff_percentage_div.classList.add("race-row-element");
+                diff_percentage_div.style.cssText += "flex-basis:10%;max-width:10%;";
 
-                let a = document.createElement("a");
-                dump.appendChild(a);
-                a.setAttribute("href", "http://" + window.location.host + "/race/" + race.raceid);
-                a.innerHTML = "Link";
-
-                let br = document.createElement("br");
-                let br2 = document.createElement("br");
-                dump.append(br);
-                dump.append(br2);
+                races_div.appendChild(race_container);
             }
         }
         else {
-            dump.innerHTML = "Could not find analyzed data";
+            console.log(body);
         }
     });
     

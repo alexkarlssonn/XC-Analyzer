@@ -1,0 +1,217 @@
+
+<head>
+    <title>RaceRace</title>
+    
+    
+<style>
+* {
+    color: #ffffff;
+    background-color: #121212;
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+    
+    -ms-overflow-style: none;  /* Hide scrollbar for IE and Edge */
+    scrollbar-width: none;     /* Hide scrollbar for Firefox */
+}
+*::-webkit-scrollbar { display: none; }  /* Hide scrollbar for Chrome, Safari and Opera */
+
+/* ------------------------------------------------------------------ 
+ RACE INFO
+-------------------------------------------------------------------- */
+.race-info-container {
+    background-color: #2a2a2a; 
+    color: white;
+    border: black 1px solid;
+    border-radius: 1rem;
+    margin: 2.5rem 3rem 1.0rem 3rem;
+    padding: 0.75rem;
+}
+
+.race-info-header {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.race-info-bottom {
+    border-top: solid 0.1rem #414141;
+    margin-top: 1.25rem;
+    font-size: 0.85rem;
+    padding-top: 0.25rem;
+}
+
+.race-info-bottom-id {
+    margin-bottom: 0.20rem;
+}
+
+.race-info-bottom a:link {
+    background-color: inherit;
+    color: #99bbff;
+    text-decoration: none;
+}
+.race-info-bottom a:visited {
+    background-color: inherit;
+    color: #99bbff;
+    text-decoration: none;
+}
+.race-info-bottom a:active {
+    background-color: inherit;
+    color: #99bbff;
+    text-decoration: none;
+}
+.race-info-bottom a:hover {
+    background-color: inherit;
+    color: #e6eeff;
+    text-decoration: none;
+}
+
+
+/* ------------------------------------------------------------------ 
+ RACE RESULTS
+-------------------------------------------------------------------- */
+.results-container {
+    margin-top: 2.5rem;
+    margin-left: 3rem;
+    margin-right: 3rem;
+    margin-bottom: 2rem;
+}
+
+/* ---------- HEADER ----------- */
+.results-header {
+    background-color: #414141;  /* #00004d; */
+    color: #ffffff;  /* #bfbfbf; */
+    border-bottom: #121212 0.1rem solid;
+    border-radius: 0.5rem 0.5rem 0 0;
+    min-height: 1.75rem;
+    max-height: 2.50rem;
+    padding-top: 0.5rem; padding-bottom: 0.50rem;
+    display: flex;
+    align-items: center;
+}
+
+.results-header-field {
+    text-align: center;
+}
+
+/* ---------- LIST OF RESULTS ----------- */
+.race-results {
+    font-size: 0.9em;     
+}
+
+.race-results a:link { text-decoration: none; }
+.race-results a:visited { text-decoration: none; }
+.race-results a:active { text-decoration: none; }
+.race-results a:hover { text-decoration: none; }
+
+/* ---------- RANK IN LIST ----------- */
+.race-result {
+    border-bottom: 0.1rem solid #121212;
+    display: flex;
+    align-items: center;
+    min-height: 3rem;
+}
+
+.race-result-field {
+    text-align: center;
+}
+
+.race-result.odd {
+    color: #cccccc;
+    background-color: #222222; 
+}
+
+.race-result.even {
+    color: #cccccc;
+    background-color: #2a2a2a; 
+}
+
+.rank-field { flex-basis: 5%; max-width: 5%; }
+.bib-field { flex-basis: 5%; max-width: 5%;}
+.fiscode-field { flex-basis: 10%; max-width: 10%;}
+.name-field { flex-basis: 40%; max-width: 40%; text-align: left; }
+.nation-field { flex-basis: 8%; max-width: 8%; }
+.year-field { flex-basis: 8%; max-width: 8%; }
+.time-field { flex-basis: 8%; max-width: 8%; }
+.diff-field { flex-basis: 8%; max-width: 8%; }
+.fispoints-field { flex-basis: 8%; max-width: 8%; }
+
+.race-result-field.bib-field {
+    color: #808080;
+}
+
+.race-result-field.fiscode-field {
+    color: #808080;
+}
+
+
+/* ------------------------------------------------------------------ 
+ OVERRIDE DEFAULT VALUES
+-------------------------------------------------------------------- */
+div {
+    color: inherit;
+    background-color: inherit;
+}
+</style>
+
+
+
+<script>
+window.onload = function() 
+{
+    let results_div = document.getElementsByClassName("race-results");
+    if (results_div && results_div.length > 0)
+    {
+        let results = results_div[0];
+        for (let i = 0; i < results.children.length; i++) 
+        {
+            let child = results.children[i];
+            let fiscode = null;
+            for (let j = 0; j < child.children.length; j++) {
+                if (child.children[j].className.includes("fiscode-field")) {
+                    fiscode = child.children[j].innerHTML;
+                    break;
+                }
+            }
+            if (fiscode) {
+                let url = "../athlete?" + fiscode;
+                child.href = url;
+            }
+        }
+    }
+}
+</script>
+</head>
+
+
+
+<!-- ALL PLACEHOLDERS ARE REPLACED BY THE SERVER -->
+<body>
+    <div class="race-info-container">
+        <div class="race-info-header">@{RACE_INFO_LOCATION} (@{RACE_INFO_NATION})</div>
+        <div>@{RACE_INFO_CATEGORY} | @{RACE_INFO_DISCIPLINE}</div>
+        <div>Date: @{RACE_INFO_DATE}</div>
+        <div>Gender: @{RACE_INFO_GENDER}</div>
+        <div class="race-info-bottom">
+            <div class="race-info-bottom-id">Race ID: @{RACEID} | Codex: @{RACE_INFO_CODEX}</div>
+            <a  href="https://www.fis-ski.com/DB/general/results.html?sectorcode=CC&raceid=@{RACEID}">FIS Website</a>
+        </div>
+    </div>
+    
+    <div class="results-container">
+        <div class="results-header">
+            <div class="results-header-field rank-field">Rank</div>
+            <div class="results-header-field bib-field">Bib</div>
+            <div class="results-header-field fiscode-field">FIS Code</div>
+            <div class="results-header-field name-field">Name</div>
+            <div class="results-header-field year-field">Year</div>
+            <div class="results-header-field nation-field">Nation</div>
+            <div class="results-header-field time-field">Time</div>
+            <div class="results-header-field diff-field">Diff</div>
+            <div class="results-header-field fispoints-field">FIS Points</div>
+        </div>
+        <div class="race-results">
+            @{RACE_RESULTS}        
+        </div>
+    </div>
+</body>
