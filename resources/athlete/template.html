@@ -1,7 +1,9 @@
 
 <head>
-	<title>Athlete Page</title>
+    <title>XC-Analyzer</title>
     <meta charset="UTF-8">
+    <meta name="author" content="Alexander Karlsson">
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 
 <style>
 * {
@@ -16,6 +18,10 @@
 }
 *::-webkit-scrollbar { display: none; }  /* Hide scrollbar for Chrome, Safari and Opera */
 
+.header-container a:link { text-decoration: none; }
+.header-container a:visited { text-decoration: none; }
+.header-container a:active { text-decoration: none; }
+.header-container a:hover { text-decoration: none; }
 
 /* ------------------------------------------------------------------ 
  TOP: ATHLETE INFORMATION
@@ -291,6 +297,12 @@ window.onload = function()
 
 <!-- ALL PLACEHOLDERS ARE REPLACED BY THE SERVER -->
 <body>
+    <div style="min-height: 2.5rem; max-height: 2.5rem; background-color:#3e3e3e; display:flex; align-items: center;" class="header-container">
+        <div style="flex-basis:5%; max-width: 5%;"></div>
+        <a style="color: inherit; background-color: inherit; font-size: 1.25rem;" href=".">XC-Analyzer</a>
+        <div style="flex-basis:85%; max-width: 85%;"></div>
+    </div>
+
 	<div class="athlete-info-container">
 		<div class="athlete-info-header">@{ATHLETE_FIRSTNAME} @{ATHLETE_LASTNAME}</div>
 		<div>@{ATHLETE_CLUB} | @{ATHLETE_NATION}</div>

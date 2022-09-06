@@ -9,27 +9,8 @@
 #include <string.h>
 #include <unistd.h>
 
-
-
-typedef struct {
-    char date[256];
-    char location[256];
-    char nation[256];
-    char category[256];
-    char discipline[256];
-    char type[256];
-    unsigned int participants = 0;
-    unsigned int rank = 0;
-    unsigned int time = 0;
-    unsigned int diff = 0;
-    char fispoints[16];
-} RaceData;
-
-
 static int GetRaceData_FromRaceInfo(RaceData* raceData, unsigned int raceid, char* race_info_buffer, int race_info_buffer_size);
 static int GetRaceData_FromRaceResults(RaceData* raceData, unsigned int raceid, unsigned int fiscode, char* race_results_buffer, int race_results_buffer_size);
-
-
 
 
 /**
@@ -117,15 +98,13 @@ int CreatePage_Athlete(int fiscode, char** PageBuffer, int* PageBuffer_size)
 
     // --------------------------------------------------------------------------------------------
     // Allocate memory for the PageBuffer
-    // Using an extra 256 bytes as padding for the size of the athlete data, just to make sure
-    // the PageBuffer can store all of it, even after the unsigned int gets converted to strings
+    // Using the size of the template file as the base, then it adds additional bytes for the
+    // athlete info. It also adds additional bytes for each raceids, to make sure all races
+    // can be added to the buffer when the placeholders gets replaced
     // --------------------------------------------------------------------------------------------
-    
-    //
-    // TODO: Add additional memory for the list of analyzed results
-    //
+    int sprint_stats_memory_size = (number_of_raceids * 1024);    
     int athlete_memory_size = (sizeof(Athlete) + 256);
-    *PageBuffer_size = template_buffer_size + athlete_memory_size + 128000;
+    *PageBuffer_size = template_buffer_size + athlete_memory_size + sprint_stats_memory_size;
 
     if ((*PageBuffer = (char*) malloc(*PageBuffer_size * sizeof(char))) == 0) 
     {
@@ -297,18 +276,6 @@ int CreatePage_Athlete(int fiscode, char** PageBuffer, int* PageBuffer_size)
                         WriteToBuffer(&(location[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
                         WriteToBuffer(&(div_end[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
                     }
-
-                    /*                    
-                    // NATION
-                    {
-                        char div_start[] = "<div class='sprint-result-field nation-field'>";
-                        char* p = &(raceData.nation[0]);
-
-                        WriteToBuffer(&(div_start[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
-                        WriteToBuffer(p, PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
-                        WriteToBuffer(&(div_end[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
-                    }
-                    */
                     
                     // CATEGORY
                     {
@@ -319,18 +286,6 @@ int CreatePage_Athlete(int fiscode, char** PageBuffer, int* PageBuffer_size)
                         WriteToBuffer(p, PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
                         WriteToBuffer(&(div_end[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
                     }
-                    
-                    /*
-                    // DISCIPLINE
-                    {
-                        char div_start[] = "<div class='sprint-result-field discipline-field'>";
-                        char* p = &(raceData.discipline[0]);
-
-                        WriteToBuffer(&(div_start[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
-                        WriteToBuffer(p, PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
-                        WriteToBuffer(&(div_end[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
-                    }
-                    */
                     
                     // PARTICIPANTS
                     {

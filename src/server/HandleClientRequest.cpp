@@ -34,11 +34,11 @@ int HandleClientRequest(int socket, Request* request)
     // Routes
     // ----------------------------------
     // Homepage
-    if (strcmp(request->path, "/") == 0 || strcmp(request->path, "/style.css") == 0 || strcmp(request->path, "/main.js") == 0)
+    if (strcmp(request->path, "/") == 0 || strcmp(request->path, "/main.js") == 0)
     {
         return Route_HomePage(socket, request);
     }
-    if (strcmp(request->path, "/athlete") == 0 || strcmp(request->path, "/athlete/style.css") == 0 || strcmp(request->path, "/athlete/main.js") == 0)
+    if (strcmp(request->path, "/athlete") == 0)  // || strcmp(request->path, "/athlete/style.css") == 0 || strcmp(request->path, "/athlete/main.js") == 0)
     {
         return Route_AthletePage(socket, request);
     }
