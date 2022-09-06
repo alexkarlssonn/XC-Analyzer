@@ -82,6 +82,65 @@ function search_athlete(fiscode, firstname, lastname, callback)
 }
 
 
+function appendAthlete(athlete, isEven)
+{
+    if (!athlete) return;
+    let results = document.getElementById("search-results");
+    if (!results) return;
+    
+    let rowColor = "";
+    if (isEven) 
+        rowColor = "color:#cccccc;background-color:#2a2a2a;";
+    else 
+        rowColor = "color:#cccccc;background-color:#222222;";
+
+    let row = document.createElement("a");
+    row.style.cssText += ("border-bottom: 0.1rem solid #121212; display:flex; align-items:center; min-height:3rem;" + rowColor);
+    row.setAttribute("href", window.location.href + "athlete?" + athlete.fiscode);
+    results.append(row);
+
+    // Fiscode
+    let div_fiscode = document.createElement("div");
+    div_fiscode.innerHTML = athlete.fiscode;
+    div_fiscode.style.cssText += "text-align:center; flex-basis: 16.67%; max-width: 16.67%";
+    row.append(div_fiscode);
+
+    // Name
+    let div_name = document.createElement("div");
+    div_name.innerHTML = athlete.firstname + " " + athlete.lastname;
+    div_name.style.cssText += "text-align:center; flex-basis: 16.67%; max-width: 16.67%";
+    row.append(div_name);
+
+    // Birthdate
+    let div_birthdate = document.createElement("div");
+    div_birthdate.innerHTML = athlete.birthdate;
+    div_birthdate.style.cssText += "text-align:center; flex-basis: 16.67%; max-width: 16.67%";
+    row.append(div_birthdate);
+
+    // Nation
+    let div_nation = document.createElement("div");
+    div_nation.innerHTML = athlete.nation;
+    div_nation.style.cssText += "text-align:center; flex-basis: 16.67%; max-width: 16.67%";
+    row.append(div_nation);
+
+    // Club
+    let div_club = document.createElement("div");
+    div_club.innerHTML = athlete.club;
+    div_club.style.cssText += "text-align:center; flex-basis: 16.67%; max-width: 16.67%";
+    row.append(div_club);
+    
+    // Gender
+    let div_gender = document.createElement("div");
+    let gender = "";
+    if (athlete.gender == "M") 
+        gender = "Male";
+    else if (athlete.gender = "F") 
+        gender = "Female";
+    div_gender.innerHTML = gender;
+    div_gender.style.cssText += "text-align:center; flex-basis: 16.67%; max-width: 16.67%";
+    row.append(div_gender);
+}
+
 
 
 /**
@@ -97,10 +156,13 @@ window.onload = function()
     let input_firstname = document.getElementById("input-firstname");
     let input_lastname = document.getElementById("input-lastname");
     let input_submit = document.getElementById("input-submit");
+    
+    let results_athletes_header = document.getElementById("results-athletes-header");
     let search_results = document.getElementById("search-results");
     
     input_submit.onclick = function() 
     {
+        results_athletes_header.style.display = "none";
         search_results.textContext = "";
         while(search_results.firstChild) {
             search_results.removeChild(search_results.firstChild);
@@ -112,25 +174,21 @@ window.onload = function()
                 let json = JSON.parse(body);
                 if (json.athletes) {
                     athletes = json.athletes;
-                    for (let i = 0; i < athletes.length; i++) {
-                        let div = document.createElement("div");
-                        search_results.appendChild(div);
-                        div.innerHTML = athletes[i].fiscode + ", " + athletes[i].firstname + " " + athletes[i].lastname;
-                        let a = document.createElement("a");
-                        a.setAttribute("href", window.location.href + "athlete?" + athletes[i].fiscode);
-                        a.innerHTML = "Link";
-                        div.appendChild(a);
+                    results_athletes_header.style.display = "flex";
+                    for (let i = 0; i < athletes.length; i++) { 
+                        appendAthlete(athletes[i], (i % 2 == 0));
                     }
-                } else {
-                    let div = document.createElement("div");
-                    search_results.appendChild(div);
-                    div.innerHTML = json.fiscode + ", " + json.firstname + " " + json.lastname;
-                    let a = document.createElement("a");
-                    a.setAttribute("href", window.location.href + "athlete?" + json.fiscode);
-                    a.innerHTML = "Link";
-                    div.appendChild(a);
+                } 
+                else if (json) {
+                    results_athletes_header.style.display = "flex";
+                    appendAthlete(json, true);
+                }
+                else {
+                    results_athletes_header.style.display = "none";
+                    search_results.innerHTML = "No athlete was found";
                 }
             } else {
+                results_athletes_header.style.display = "none";
                 search_results.innerHTML = "No athlete was found";
             }
         });
