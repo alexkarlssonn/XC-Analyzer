@@ -1,11 +1,13 @@
 
 .DS_Store
+
+NOTES
 backend
+
 db/_old_db/*
 tests/*
 
-NOTES
+db/*
+!db/.gitkeep
 
-# db/
-# convert_database/output/*
 
