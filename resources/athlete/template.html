@@ -6,6 +6,9 @@
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 
 <style>
+/* ------------------------------------------------------------------ 
+ GENERAL STYLES
+-------------------------------------------------------------------- */
 * {
     color: #ffffff;
     background-color: #121212;  
@@ -16,38 +19,34 @@
     -ms-overflow-style: none;  /* Hide scrollbar for IE and Edge */
     scrollbar-width: none;     /* Hide scrollbar for Firefox */
 }
-*::-webkit-scrollbar { display: none; }  /* Hide scrollbar for Chrome, Safari and Opera */
+/* Scrollbar for Chrome, Safari and Opera */
+*::-webkit-scrollbar { 
+    border: 0.1rem solid #282828;
+    background-color: #222222; 
+    width: 0.5rem;
+    height: 0.5rem;
+    padding: 0.2rem;
+}  
+*::-webkit-scrollbar-thumb { 
+    background-color: #515151;
+    border-radius: 0.5rem;
+}  
 
 .header-container a:link { text-decoration: none; }
 .header-container a:visited { text-decoration: none; }
 .header-container a:active { text-decoration: none; }
 .header-container a:hover { text-decoration: none; }
 
+
 /* ------------------------------------------------------------------ 
- TOP: ATHLETE INFORMATION
+ ATHLETE INFORMATION
 -------------------------------------------------------------------- */
-.athlete-info-container {
-    background-color: #2a2a2a; 
-    color: white;
-    border: #000000 1px solid;
-    border-radius: 1rem;
-    margin: 2.5rem 3rem 1.0rem 3rem;
-    padding: 0.75rem;
-}
-
-.athlete-info-header {
-    font-size: 2.5rem;
-    font-weight: bold;
-    margin-bottom: 0.25rem;
-}
-
 .athlete-info-bottom {
     border-top: solid 0.1rem #414141;
     margin-top: 1.25rem;
     font-size: 0.85rem;
     padding-top: 0.25rem;
 }
-
 .athlete-info-bottom a:link {
     background-color: inherit;
     color: #99bbff;
@@ -69,21 +68,9 @@
     text-decoration: none;
 }
 
-
 /* ------------------------------------------------------------------ 
  MENU OPTIONS
 -------------------------------------------------------------------- */
-.menu-selection-container {
-}
-
-.menu-options {
-    min-height: 2rem;
-    margin-left: 1.5rem; 
-    margin-right: 1.5rem;
-    display: flex; 
-    justify-content: center;
-}
-
 .menu-option {
     user-select: none;
     text-align: center;
@@ -94,65 +81,83 @@
     padding: 0.5rem 1.5rem;
 }
 
-
 /* ------------------------------------------------------------------ 
  MENU: RESULTS 
 -------------------------------------------------------------------- */
-.menu-results {
+.filter-button {
+    user-select: none; 
+    text-align: center; 
+    color: #000000; 
+    background-color: #bb86fc; 
+    width: 6rem; 
+    border: #000000 solid 0.1rem; 
+    border-radius: 0.5rem; 
+    margin-left: 1rem; 
+    margin-right: 1rem; 
+    margin-top: 0.5rem; 
+    padding: 0.25rem 1.0rem;
+}
+.filter-button:active {
+    background-color: #ab6afb;
+}
+
+.races-header-field {
     text-align: center;
 }
+
+.races-list a:link { text-decoration: none; }
+.races-list a:visited { text-decoration: none; }
+.races-list a:active { text-decoration: none; }
+.races-list a:hover { text-decoration: none; }
+
+.race-row {
+    border-bottom: 0.1rem solid #121212;
+    display: flex;
+    align-items: center;
+    min-height: 3rem;
+}
+.race-row.odd {
+    color: #cccccc;
+    background-color: #2a2a2a  
+}
+.race-row.even {
+    color: #cccccc;
+    background-color: #222222  
+}
+.race-row-field {
+    text-align: center;
+}
+.date-all-races { flex-basis: 10%; max-width: 10%; }
+.location-all-races { flex-basis: 30%; max-width: 30%; text-align: left; padding-left: 1rem; }
+.category-all-races { flex-basis: 30%; max-width: 30%; text-align: left; }
+.discipline-all-races { flex-basis: 30%; max-width: 30%; text-align: left; }
 
 
 /* ------------------------------------------------------------------ 
  MENU: SPRINT QUAL STATISTICS
 -------------------------------------------------------------------- */
-.menu-sprint-stats {
-}
-
-.sprint-section {
-    margin: 2.5rem 3rem 2rem 3rem;
-}
-
-/* ---------- HEADER ----------- */
-.sprint-header-section {
-    background-color: #414141; 
-    color: #ffffff;
-    border-bottom: #121212 0.1rem solid;
-    border-radius: 0.5rem 0.5rem 0 0;
-    min-height: 1.75rem;
-    max-height: 2.50rem;
-    padding-top: 0.5rem; padding-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-}
-
 .sprint-header-field {
     text-align: center;
 }
 
-/* ---------- LIST OF SPRINT RESULTS ----------- */
 .sprint-results {
     font-size: 0.9em;
 }
-
 .sprint-results a:link { text-decoration: none; }
 .sprint-results a:visited { text-decoration: none; }
 .sprint-results a:active { text-decoration: none; }
 .sprint-results a:hover { text-decoration: none; }
 
-/* ---------- RANK IN SPRINT RESULT LIST ----------- */
 .sprint-result {
     border-bottom: 0.1rem solid #121212;
     display: flex;
     align-items: center;
     min-height: 3rem;
 }
-
 .sprint-result.odd {
     color: #cccccc;
     background-color: #2a2a2a  
 }
-
 .sprint-result.even {
     color: #cccccc;
     background-color: #222222  
@@ -161,40 +166,35 @@
 .sprint-result-field {
     text-align: center;
 }
-
-.sprint-result-field.raceid-field {
+.sprint-result-field.raceid-stats {
     color: #808080; 
 }
-.sprint-result-field.category-field {
+.sprint-result-field.category-stats {
     color: #808080;
 }
-.sprint-result-field.participants-field {
+.sprint-result-field.participants-stats {
     color: #808080;
 }
-
-.sprint-result-field.rank-field {
+.sprint-result-field.rank-stats {
     font-weight: bold;
 }
 
-.date-field { flex-basis: 8%; max-width: 8%; }
-.raceid-field { flex-basis: 5%; max-width: 5%; }
-.location-field { flex-basis: 19%; max-width: 19%; text-align: left; padding-left: 1rem; }
-.category-field { flex-basis: 19%; max-width: 19%; text-align: left; }
-.participants-field { flex-basis: 9%; max-width: 9%; } 
-.rank-field { flex-basis: 6%; max-width: 6%; }
-.time-field { flex-basis: 6%; max-width: 6%; }
-.diff-field { flex-basis: 6%; max-width: 6%; }
-.diffpercentage-field { flex-basis: 6%; max-width: 6%; }
-.fispoints-field { flex-basis: 6%; max-width: 6%; }
-.avg-field { flex-basis: 10%; max-width: 10%; }
+.date-stats { flex-basis: 8%; max-width: 8%; }
+.raceid-stats { flex-basis: 5%; max-width: 5%; }
+.location-stats { flex-basis: 19%; max-width: 19%; text-align: left; padding-left: 1rem; }
+.category-stats { flex-basis: 19%; max-width: 19%; text-align: left; }
+.participants-stats { flex-basis: 9%; max-width: 9%; } 
+.rank-stats { flex-basis: 6%; max-width: 6%; }
+.time-stats { flex-basis: 6%; max-width: 6%; }
+.diff-stats { flex-basis: 6%; max-width: 6%; }
+.diffpercentage-stats { flex-basis: 6%; max-width: 6%; }
+.fispoints-stats { flex-basis: 6%; max-width: 6%; }
+.avg-stats { flex-basis: 10%; max-width: 10%; }
 
 
 /* ------------------------------------------------------------------ 
  MENU: FISPOINTS
 -------------------------------------------------------------------- */
-.menu-fispoints {
-    text-align: center;
-}
 
 
 /* ------------------------------------------------------------------ 
@@ -208,6 +208,236 @@ div {
 
 
 <script>
+/* -----------------------------------------------------------------
+ * Create a row for the given race under the "results" menu
+ * ----------------------------------------------------------------- */
+function Races_CreateRaceRow(race, index)
+{
+    let isEven = (index % 2 == 0);
+    let a = document.createElement("a");
+    a.classList.add("race-row");
+    if (isEven) {
+        a.classList.add("even");
+    } else {
+        a.classList.add("odd");
+    }
+    a.href = "../race?" + race.raceid;
+    let all_races = document.getElementsByClassName("races-list");
+    all_races[0].append(a);
+
+    let date = document.createElement("div");
+    date.classList.add("race-row-field");
+    date.classList.add("date-all-races");
+    date.innerHTML = race.date;
+    a.append(date);
+
+    let location = document.createElement("div");
+    location.classList.add("race-row-field");
+    location.classList.add("location-all-races");
+    location.innerHTML = race.location + "(" + race.nation + ")";
+    a.append(location);
+    
+    let discipline = document.createElement("div");
+    discipline.classList.add("race-row-field");
+    discipline.classList.add("discipline-all-races");
+    discipline.innerHTML = race.discipline;
+    a.append(discipline);
+
+    let category = document.createElement("div");
+    category.classList.add("race-row-field");
+    category.classList.add("category-all-races");
+    category.innerHTML = race.category;
+    a.append(category);
+}
+
+/* -----------------------------------------------------------------
+ * Create a row for the given race in the "Sprint stats" menu
+ * ----------------------------------------------------------------- */
+function SprintStats_CreateRaceRow(race, index)
+{
+    let isEven = (index % 2 == 0);
+    let a = document.createElement("a");
+    a.classList.add("sprint-result");
+    if (isEven) {
+        a.classList.add("even");
+    } else {
+        a.classList.add("odd");
+    }
+    a.href = "../race?" + race.raceid;
+    let sprint_results = document.getElementsByClassName("sprint-results");
+    sprint_results[0].append(a);
+
+    let date = document.createElement("div");
+    date.classList.add("sprint-result-field");
+    date.classList.add("date-stats");
+    date.innerHTML = race.date;
+    a.append(date);
+
+    let raceid = document.createElement("div");
+    raceid.classList.add("sprint-result-field");
+    raceid.classList.add("raceid-stats");
+    raceid.innerHTML = race.raceid;
+    a.append(raceid);
+
+    let location = document.createElement("div");
+    location.classList.add("sprint-result-field");
+    location.classList.add("location-stats");
+    if (race.nation)
+        location.innerHTML = race.location + " (" + race.nation + ")";
+    else
+        location.innerHTML = race.location;
+    a.append(location);
+
+    let category = document.createElement("div");
+    category.classList.add("sprint-result-field");
+    category.classList.add("category-stats");
+    category.innerHTML = race.category;
+    a.append(category);
+    
+    let participants = document.createElement("div");
+    participants.classList.add("sprint-result-field");
+    participants.classList.add("participants-stats");
+    participants.innerHTML = race.participants;
+    a.append(participants);
+
+    let rank = document.createElement("div");
+    rank.classList.add("sprint-result-field");
+    rank.classList.add("rank-stats");
+    rank.innerHTML = race.rank;
+    a.append(rank);
+    
+    let time = document.createElement("div");
+    time.classList.add("sprint-result-field");
+    time.classList.add("time-stats");
+    time.innerHTML = race.time_str;
+    a.append(time);
+
+    let diff = document.createElement("div");
+    diff.classList.add("sprint-result-field");
+    diff.classList.add("diff-stats");
+    diff.innerHTML = race.diff_str;
+    a.append(diff);
+
+    let diff_p = document.createElement("div");
+    diff_p.classList.add("sprint-result-field");
+    diff_p.classList.add("diffpercentage-stats");
+    diff_p.innerHTML = race.diff_per;
+    a.append(diff_p);
+
+    let fispoints = document.createElement("div");
+    fispoints.classList.add("sprint-result-field");
+    fispoints.classList.add("fispoints-stats");
+    fispoints.innerHTML = race.fispoints;
+    a.append(fispoints);
+
+    let avg = document.createElement("div");
+    avg.classList.add("sprint-result-field");
+    avg.classList.add("avg-stats");
+    avg.innerHTML = "-";
+    a.append(avg);
+}
+
+/* -----------------------------------------------------------------
+ * Filter the given races based on the filter settings
+ * ----------------------------------------------------------------- */
+function FilterRaces(RACES)
+{
+    let new_races = [];
+    let racesFrom = document.getElementById("filter-from").value;
+    let season = document.getElementById("filter-season").value;
+    for (let i = 0; i < RACES.length; i++) 
+    {
+        // Sort the races based on the season the user has selected
+        let date = RACES[i].date.split("-");
+        let year = parseInt(date[2]);
+        (date[1] >= 7) ? year = year : year -= 1;
+        
+        let isWinterSeason = false;
+        if (date[1] >= 11 || date[1] <= 4)
+            isWinterSeason = true;
+
+        if (season === "all") {
+            if (racesFrom === "all" || (racesFrom === "winter" && isWinterSeason) || (racesFrom === "summer" && !isWinterSeason)) {
+                new_races.push(RACES[i]);
+                continue;
+            }
+        }
+        else if (season.split("/")[0] === year.toString()) {
+            if (racesFrom === "all" || (racesFrom === "winter" && isWinterSeason) || (racesFrom === "summer" && !isWinterSeason)) {
+                new_races.push(RACES[i]);
+                continue;
+            }
+        }
+    }
+    return new_races;
+}
+
+/* -----------------------------------------------------------------
+ * Helper functions for converting ms to a time string
+ * ----------------------------------------------------------------- */
+function padTo2Digits(num) {
+    return num.toString().padStart(2, '0');
+}
+function convert_ms_to_time(ms) {
+    let hundreths = Math.floor(ms / 10);
+    let seconds = Math.floor(ms / 1000);
+    let minutes = Math.floor(ms / 60000);
+    hundreths = hundreths % 100;
+    seconds = seconds % 60;
+    minutes = minutes % 60;
+    if (minutes > 0)
+        return `${padTo2Digits(minutes)}:${padTo2Digits(seconds)}.${padTo2Digits(hundreths)}`;
+    else
+        return `${padTo2Digits(seconds)}.${padTo2Digits(hundreths)}`;
+}
+
+/* -----------------------------------------------------------------
+ * Update the "Sprint Stats" with the given races
+ * ----------------------------------------------------------------- */
+function Update_SprintStats(RACES)
+{
+    // Update the graph
+
+
+    // Clear the list of races
+    let sprint_results = document.getElementsByClassName("sprint-results")[0];
+    while (sprint_results.firstChild) {
+        sprint_results.removeChild(sprint_results.lastChild);
+    }
+    
+    // Update the list of races
+    let best_rank = 100000000;
+    let best_diff = 100000000;
+    let total_rank = 0;
+    let total_diff = 0;
+    let sq_counter = 0;
+    for (let i = 0; i < RACES.length; i++) {
+        if (RACES[i].type === "SQ") {
+            sq_counter += 1;
+            SprintStats_CreateRaceRow(RACES[i], sq_counter);
+            const r = parseInt(RACES[i].rank);
+            const d = parseInt(RACES[i].diff);
+            (r < best_rank) ? (best_rank = r) : (best_rank = best_rank);
+            (d < best_diff) ? (best_diff = d) : (best_diff = best_diff);
+            total_rank += parseInt(r);
+            total_diff += parseInt(d);
+        }
+    }
+    
+    // Update the summary
+    let rank_best = document.getElementById("summary-rank-best");
+    let diff_best = document.getElementById("summary-diff-best");
+    let rank_avg = document.getElementById("summary-rank-avg");
+    let diff_avg = document.getElementById("summary-diff-avg");
+    rank_best.innerHTML = Math.round(best_rank);
+    diff_best.innerHTML = "+" + convert_ms_to_time(Math.round(best_diff));
+    rank_avg.innerHTML = Math.round(total_rank / sq_counter);
+    diff_avg.innerHTML = "+" + convert_ms_to_time(Math.round(total_diff / sq_counter));
+}
+
+/* -----------------------------------------------------------------
+ * MAIN
+ * ----------------------------------------------------------------- */
 window.onload = function()
 {
     const BG_NOT_SELECTED = "#313131";
@@ -268,43 +498,98 @@ window.onload = function()
         menu_fispoints.style.display = "block";
     });
 
-    // Add inks to the results elements in the sprint stats list
-    let sprint_results_div = document.getElementsByClassName("sprint-results");
-    if (sprint_results_div && sprint_results_div.length > 0)
-    {
-        let results = sprint_results_div[0];
-        for (let i = 0; i < results.children.length; i++)
-        {
-            let child = results.children[i];
-            let raceid = null;
-            for (let j = 0; j < child.children.length; j++) {
-                if (child.children[j].className.includes("raceid-field")) {
-                    raceid = child.children[j].innerHTML;
-                    break;
-                }
-            }
-            if (raceid) {
-                let url = "../race?" + raceid;
-                child.href = url;
-            }
+    
+    // Sort all races for this athlete by date (newest to oldest)
+    let RACES = [@{ATHLETE_RACES}];
+    RACES.sort(function(race_1, race_2) {
+        let a = race_1.date.split('-').reverse().join('');
+        let b = race_2.date.split('-').reverse().join('');
+        return a > b ? -1 : a < b ? 1 : 0;
+    });
+
+    // Generate all the rows for all results
+    for (let i = 0; i < RACES.length; i++) {
+        Races_CreateRaceRow(RACES[i], i + 1);
+    }
+
+    // Update the dropdown box with the seasons 
+    let filter_season = document.getElementById("filter-season");
+    if (RACES.length > 1) {
+        let newest = RACES[0].date.split("-");
+        let oldest = RACES[RACES.length - 1].date.split("-");
+        let newest_year = parseInt(newest[2]);
+        let newest_month = parseInt(newest[1]);
+        let oldest_year = parseInt(oldest[2]);
+        let oldest_month = parseInt(oldest[1]);
+
+        let newest_IsFirstHalf;
+        (newest_month >= 7) ? (newest_IsFirstHalf = true) : (newest_IsFirstHalf = false);
+        let oldest_IsFirstHalf;
+        (oldest_month >= 7) ? (oldest_IsFirstHalf = true) : (oldest_IsFirstHalf = false);
+
+        let seasonDifference = newest_year - oldest_year;
+        if (newest_IsFirstHalf && !oldest_IsFirstHalf)
+            seasonDifference += 1;
+        if (!newest_IsFirstHalf && oldest_IsFirstHalf)
+            seasonDifference -= 1;
+
+        let firstYearInString = newest_year;
+        if (!newest_IsFirstHalf)
+            firstYearInString -= 1;
+
+        for (let i = 0; i < (seasonDifference + 1); i++) {
+            let a = (firstYearInString - i).toString();
+            let b = (firstYearInString - i + 1).toString();
+            let string = a + "/" + b;
+            let option = document.createElement("option");
+            option.value = string;
+            option.innerHTML = string;
+            filter_season.append(option);
         }
     }
+    else if (RACES.length == 1) {
+        let date = RACES[0].date.split("-");
+        let isFirstHalf;
+        (date[1] >= 7) ? (isFirstHalf = true) : (isFirstHalf = false);
+
+        let firstYearInString = date[2];
+        if (!isFirstHalf)
+            firstYearInString -= 1;
+        
+        let a = (firstYearInString).toString();
+        let b = (firstYearInString + 1).toString();
+        let string = a + "/" + b;
+        let option = document.createElement("option");
+        option.value = string;
+        option.innerHTML = string;
+        filter_season.append(option);
+    }
+
+
+    let filter_button = document.getElementById("filter-button");
+    filter_button.addEventListener("click", function(event) {
+        new_races = FilterRaces(RACES);
+        Update_SprintStats(new_races);
+    });
+
+    // Update the sprint stats 
+    races = FilterRaces(RACES);
+    Update_SprintStats(races);
 }
 </script>
 </head>
 
-
-
-<!-- ALL PLACEHOLDERS ARE REPLACED BY THE SERVER -->
 <body>
     <div style="min-height: 2.5rem; max-height: 2.5rem; background-color:#3e3e3e; display:flex; align-items: center;" class="header-container">
         <div style="flex-basis:5%; max-width: 5%;"></div>
-        <a style="color: inherit; background-color: inherit; font-size: 1.25rem;" href=".">XC-Analyzer</a>
+        <a style="user-select:none; color: inherit; background-color: inherit; font-size: 1.25rem;" href=".">XC-Analyzer</a>
         <div style="flex-basis:85%; max-width: 85%;"></div>
     </div>
 
-	<div class="athlete-info-container">
-		<div class="athlete-info-header">@{ATHLETE_FIRSTNAME} @{ATHLETE_LASTNAME}</div>
+	<div style="background-color: #2a2a2a; color: white; border: #000000 1px solid; border-radius: 1rem; margin: 2.5rem 3rem 1.0rem 3rem; padding: 0.75rem;">
+		<div style="font-size: 2.5rem; font-weight: bold; margin-bottom: 0.25rem;">
+            @{ATHLETE_FIRSTNAME} @{ATHLETE_LASTNAME}
+        </div>
 		<div>@{ATHLETE_CLUB} | @{ATHLETE_NATION}</div>
 		<div>FIS Code: @{ATHLETE_FISCODE}</div>
 		<div>Birthdate: @{ATHLETE_BIRTHDATE}</div>
@@ -314,42 +599,123 @@ window.onload = function()
 		</div>
 	</div>
 
-	<div class="menu-selection-container">
-        <div class="menu-options">
+	<div>
+        <div style="min-height: 2rem; margin-left: 1.5rem; margin-right: 1.5rem; display: flex; justify-content: center;">
             <div class="menu-option" id="menu-option-results">Results</div>
             <div class="menu-option" id="menu-option-stats-sprint">Sprint Statistics</div>
             <div class="menu-option" id="menu-option-fispoints">FIS Points</div>
         </div>	
 	</div>
 
-	<div class="selected-menu-container">
-        <!-- MENU #1: LIST OF RACES -->
-        <div class="menu-results" id="menu-results">Races</div>
-
-		<!-- MENU #3: FIS POINTES HISTORY -->
-        <div class="menu-fispoints" id="menu-fispoints">Fispoints</div>
-
-		<!-- MENU #2: SPRINT STATISTICS -->
-        <div class="menu-sprint-stats" id="menu-sprint-stats">
-            <div class="sprint-section">
-                <div class="sprint-header-section">
-                    <div class="sprint-header-field date-field">Date</div>
-                    <div class="sprint-header-field raceid-field">Race ID</div>
-                    <div class="sprint-header-field location-field">Location</div>
-                    <div class="sprint-header-field category-field">Category</div>
-                    <div class="sprint-header-field participants-field">Participants</div>
-                    <div class="sprint-header-field rank-field">Rank</div>
-                    <div class="sprint-header-field time-field">Time</div>
-                    <div class="sprint-header-field diff-field">Diff.</div>
-                    <div class="sprint-header-field diffpercentage-field">Diff.</div>
-                    <div class="sprint-header-field fispoints-field">FIS Points</div>
-                    <div class="sprint-header-field avg-field">Avg. FIS Points</div>
+	<div class="selected-menu-container" style="overflow: auto; min-width: 1150px;">
+        <!-- ==========================
+            MENU #1: LIST OF RACES 
+        ============================ -->
+        <div id="menu-results" style="margin-top: 1.5rem; margin-bottom: 2rem; font-size: 0.9rem; text-align: center;">
+            
+            <!-- Summary -->
+            <div style="margin: 1.5rem 3rem 1.5rem 3rem; border: white solid 0.1rem; text-align: center;">Summary</div>
+            
+            <!-- List of results -->
+            <div style="right: 0; left: 0; margin-left: auto; margin-right: auto; width: 75%;">
+                <div style="font-size: 1rem; background-color: #414141; color: #ffffff; border-bottom: #121212 0.1rem solid; border-radius: 0.5rem 0.5rem 0 0; 
+                            min-height: 1.75rem; max-height: 2.50rem; padding-top: 0.5rem; padding-bottom: 0.5rem; display: flex; align-items: center;">
+                    <div class="races-header-field date-all-races">Date</div>
+                    <div class="races-header-field location-all-races">Location</div>
+                    <div class="races-header-field discipline-all-races">Discipline</div>
+                    <div class="races-header-field category-all-races">Category</div>
                 </div>
-                <div class="sprint-results">
-                    @{ANALYZED_RACES_SPRINT}
+                <!-- LIST OF ALL RESULTS -->
+                <div class="races-list"></div>
+            </div>
+        
+        </div>
+
+		<!-- ============================
+            MENU #2: SPRINT STATISTICS 
+        ============================ -->
+        <div id="menu-sprint-stats">
+
+            <!-- Graph -->
+            <div style="margin: 1.5rem 3rem 1.5rem 3rem; height: 200px; border: #414141 solid 0.1rem; text-align: center;">GRAPH</div>
+            
+            <!-- Filter -->
+            <div style="margin: 1.5rem 3rem 1.5rem 3rem; display: flex; align-items: center;">
+                
+                <div style="flex-basis: 49%; max-width: 49%;">
+                    <div style="background-color: #414141; color: #ffffff; border_bottom: #121212 0.1rem solid; border-radius: 0.5rem 0.5rem 0 0; text-align: center; min-height: 1.5rem; padding: 0.25rem 0;">Filter Races</div>
+                    <div style="padding-top: 0.5rem; padding-bottom: 0.5rem; background-color: #222222; min-height: 7rem;">
+                        <div style="display: flex; align-items: center; margin: 0.25rem 0 0.25rem 1rem;">
+                            <div style="text-align: left; flex-basis: 15%; max-width: 15%;">Season:</div>
+                            <select id="filter-season" style="text-align: left; flex-basis: 25%; max-width: 25%;">
+                                <option value="all">All</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; align-items: center; margin: 0.25rem 0 0.25rem 1rem;">
+                            <div style="text-align: left; flex-basis: 15%; max-width: 15%;">Races from:</div>
+                            <select id="filter-from" style="text-align: left; flex-basis: 25%; max-width: 25%;">
+                                <option value="winter">Winter Season</option>
+                                <option value="summer">Summer Season</option>
+                                <option value="all">All Year</option>
+                            </select>
+                        </div>
+
+                        <div id="filter-button" class="filter-button">
+                            Filter
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="flex-basis: 2%; max-width: 2%;"></div>
+
+                <div style="flex-basis: 49%; max-width: 49%; font-size: 0.9rem;">
+                    <div style="font-size: 1.0rem; background-color: #414141; color: #ffffff; border_bottom: #121212 0.1rem solid; border-radius: 0.5rem 0.5rem 0 0; text-align: center; min-height: 1.5rem; padding: 0.25rem 0;">Summary</div>
+                    <div style="padding-top: 0.5rem; padding-bottom: 0.5rem; background-color: #222222; min-height: 7rem;">
+                        <div style="display: flex; align-items: center; margin: 0.25rem 0 0.25rem 1rem;">
+                            <div style="text-align: left; flex-basis: 25%; max-width: 25%;">Best Rank:</div> 
+                            <div id="summary-rank-best" style="text-align: left;"></div>
+                        </div>
+                        <div style="display: flex; align-items: center; margin: 0.25rem 0 0.25rem 1rem; padding-bottom: 0.2rem; border-bottom: #414141 solid 0.1rem;">
+                            <div style="text-align: left; flex-basis: 25%; max-width: 25%;">Best Difference:</div> 
+                            <div id="summary-diff-best" style="text-align: left;"></div>
+                        </div>
+                        <div style="display: flex; align-items: center; margin: 0.25rem 0 0.25rem 1rem;">
+                            <div style="text-align: left; flex-basis: 25%; max-width: 25%;">Average Rank:</div> 
+                            <div id="summary-rank-avg" style="text-align: left;"></div>
+                        </div>
+                        <div style="display: flex; align-items: center; margin: 0.25rem 0 0.25rem 1rem;">
+                            <div style="text-align: left; flex-basis: 25%; max-width: 25%;">Average Difference:</div> 
+                            <div id="summary-diff-avg" style="text-align: left;"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <!-- List of races -->
+            <div style="margin: 1.5rem 3rem 6rem 3rem;">
+                <div style="background-color: #414141; color: #ffffff; border-bottom: #121212 0.1rem solid; border-radius: 0.5rem 0.5rem 0 0; 
+                            min-height: 1.75rem; max-height: 2.50rem; padding-top: 0.5rem; padding-bottom: 0.5rem; display: flex; align-items: center;">
+                    <div class="sprint-header-field date-stats">Date</div>
+                    <div class="sprint-header-field raceid-stats">Race ID</div>
+                    <div class="sprint-header-field location-stats">Location</div>
+                    <div class="sprint-header-field category-stats">Category</div>
+                    <div class="sprint-header-field participants-stats">Participants</div>
+                    <div class="sprint-header-field rank-stats">Rank</div>
+                    <div class="sprint-header-field time-stats">Time</div>
+                    <div class="sprint-header-field diff-stats">Diff.</div>
+                    <div class="sprint-header-field diffpercentage-stats">Diff.</div>
+                    <div class="sprint-header-field fispoints-stats">FIS Points</div>
+                    <div class="sprint-header-field avg-stats">Avg. FIS Points</div>
+                </div>
+                <div class="sprint-results"></div>
+            </div>
         </div>
+
+		<!-- ============================
+            MENU #3: FIS POINTES HISTORY 
+        ============================ -->
+        <div id="menu-fispoints">Fispoints</div>
+
     </div>
 </body>
 
