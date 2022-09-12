@@ -9,8 +9,8 @@
 #include <string.h>
 #include <unistd.h>
 
-static int GetRaceData_FromRaceInfo(RaceData* raceData, unsigned int raceid, char* race_info_buffer, int race_info_buffer_size);
-static int GetRaceData_FromRaceResults(RaceData* raceData, unsigned int raceid, unsigned int fiscode, char* race_results_buffer, int race_results_buffer_size);
+static int GetRaceData_FromRaceInfo(RaceData* raceData, unsigned int raceid, int* start_byte, char* race_info_buffer, int race_info_buffer_size);
+static int GetRaceData_FromRaceResults(RaceData* raceData, unsigned int raceid, int* start_byte, unsigned int fiscode, char* race_results_buffer, int race_results_buffer_size);
 
 
 /**
@@ -203,8 +203,258 @@ int CreatePage_Athlete(int fiscode, char** PageBuffer, int* PageBuffer_size)
                     WriteToBuffer(&(female[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
                 }
             }
+            // --------------------------------------------------------------
+            // Creates a javascript array with all races
+            // --------------------------------------------------------------
+            else if (strcmp(placeholder, "ATHLETE_RACES") == 0)
+            {
+                int raceinfo_currentByte = 0;     // Tracks the last visited index inside the buffer in order to speed up the next search
+                int raceresults_currentByte = 0;  // Tracks the last visited index inside the buffer in order to speed up the next search
+                
+                for (int i = 0; i < number_of_raceids; i++)
+                {
+                    unsigned int raceid = raceids[i];
+                    RaceData raceData;
+
+                    // Find the race info data for the current raceid
+                    if (GetRaceData_FromRaceInfo(&raceData, raceid, &raceinfo_currentByte, race_info_buffer, race_info_buffer_size) == -1) {
+                        fprintf(stderr, "[%ld] Warning: Race skipped while creating javascript array: Failed to find race info for race %u in the database\n", (long)getpid(), raceid);
+                        continue;   
+                    }
+            
+                    // Find the race result data for the current raceid, from the perspective of the given athlete
+                    if (GetRaceData_FromRaceResults(&raceData, raceid, &raceresults_currentByte, fiscode, race_results_buffer, race_results_buffer_size) == -1) {
+                        fprintf(stderr, "[%ld] Warning: Race skipped while creating javascript array: Failed to find race results for race %u in the database\n", (long)getpid(), raceid);
+                        continue;   
+                    }
+                    
+                    // START OF OBJECT
+                    char object_start[] = "{";
+                    WriteToBuffer(&(object_start[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+
+                    // DATE
+                    {
+                        char start[] = "\"date\": \"";
+                        char end[] = "\",";
+                        char* p = &(raceData.date[0]);
+
+                        WriteToBuffer(&(start[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        WriteToBuffer(p, PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        WriteToBuffer(&(end[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                    }
+                    
+                    // RACEID
+                    {
+                        char start[] = "\"raceid\": \"";
+                        char end[] = "\",";
+                        char raceid_str[16];
+                        sprintf(raceid_str, "%u", raceid);
+                        
+                        WriteToBuffer(&(start[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        WriteToBuffer(&(raceid_str[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        WriteToBuffer(&(end[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                    }
+
+                    // LOCATION
+                    {
+                        char start[] = "\"location\": \"";
+                        char end[] = "\",";
+                        char* p = &(raceData.location[0]);
+
+                        WriteToBuffer(&(start[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        WriteToBuffer(p, PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        WriteToBuffer(&(end[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                    }
+                    
+                    // NATION
+                    {
+                        char start[] = "\"nation\": \"";
+                        char end[] = "\",";
+                        char* p = &(raceData.nation[0]);
+
+                        WriteToBuffer(&(start[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        WriteToBuffer(p, PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        WriteToBuffer(&(end[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                    }
+                    
+                    // CATEGORY
+                    {
+                        char start[] = "\"category\": \"";
+                        char end[] = "\",";
+                        char* p = &(raceData.category[0]);
+
+                        WriteToBuffer(&(start[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        WriteToBuffer(p, PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        WriteToBuffer(&(end[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                    }
+                    
+                    // DISCIPLINE
+                    {
+                        char start[] = "\"discipline\": \"";
+                        char end[] = "\",";
+                        char* p = &(raceData.discipline[0]);
+
+                        WriteToBuffer(&(start[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        WriteToBuffer(p, PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        WriteToBuffer(&(end[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                    }
+                    
+                    // TYPE
+                    {
+                        char start[] = "\"type\": \"";
+                        char end[] = "\",";
+                        char* p = &(raceData.type[0]);
+
+                        WriteToBuffer(&(start[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        WriteToBuffer(p, PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        WriteToBuffer(&(end[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                    }
+                    
+                    // PARTICIPANTS
+                    {
+                        char start[] = "\"participants\": \"";
+                        char end[] = "\",";
+                        char participants[16];
+                        sprintf(participants, "%u", raceData.participants);
+                        
+                        WriteToBuffer(&(start[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        WriteToBuffer(&(participants[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        WriteToBuffer(&(end[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                    }
+                    
+                    // RANK
+                    {
+                        char start[] = "\"rank\": \"";
+                        char end[] = "\",";
+                        char rank[16];
+                        sprintf(rank, "%u", raceData.rank);
+                        
+                        WriteToBuffer(&(start[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        WriteToBuffer(&(rank[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        WriteToBuffer(&(end[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                    }
+                    
+                    // TIME 
+                    {
+                        char start[] = "\"time\": ";
+                        char end[] = ",";
+                        char time[16];
+                        sprintf(time, "%u", raceData.time);
+                        
+                        WriteToBuffer(&(start[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        WriteToBuffer(&(time[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        WriteToBuffer(&(end[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                    }
+
+                    // TIME STRING
+                    {
+                        char start[] = "\"time_str\": \"";
+                        char end[] = "\",";
+                        char* time = RaceTime_ms_to_string(raceData.time);
+                        
+                        WriteToBuffer(&(start[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        if (time != 0) {
+                            WriteToBuffer(time, PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        }
+                        WriteToBuffer(&(end[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        if (time) { free(time); }
+                    }
+                    
+                    // DIFF 
+                    {
+                        char start[] = "\"diff\": ";
+                        char end[] = ",";
+                        char diff[16];
+                        sprintf(diff, "%u", raceData.diff);
+                        
+                        WriteToBuffer(&(start[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        WriteToBuffer(&(diff[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        WriteToBuffer(&(end[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                    }
+
+                    // DIFF STRING
+                    {
+                        char start[] = "\"diff_str\": \"";
+                        char end[] = "\",";
+                        char* diff = RaceTimeDiff_ms_to_string(raceData.diff);
+
+                        WriteToBuffer(&(start[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        if (diff && raceData.diff != 0) {
+                            WriteToBuffer(&(diff[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        }
+                        WriteToBuffer(&(end[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        if (diff) { free(diff); }
+                    }
+
+                    // DIFF PERCENTAGE
+                    {
+                        char start[] = "\"diff_per\": \"";
+                        char end[] = "\",";
+                        
+                        char diff_per[16];
+                        unsigned int time_winner = raceData.time - raceData.diff;
+                        float diff = (((float) raceData.time / time_winner) - 1) * 100;
+                        sprintf(diff_per, "%.2f", diff);
+                        
+                        WriteToBuffer(&(start[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        if (raceData.diff != 0) {
+                            WriteToBuffer(&(diff_per[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                            char percentageSign[] = "%";
+                            WriteToBuffer(&(percentageSign[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        }
+                        WriteToBuffer(&(end[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                    }
+                   
+                    // FIS POINTS
+                    {
+                        char start[] = "\"fispoints\": \"";
+                        char end[] = "\",";
+                        char* p = &(raceData.fispoints[0]);
+
+                        WriteToBuffer(&(start[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        if (p && *p != ' ' && *p != '\0') {
+                            WriteToBuffer(p, PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        }
+                        WriteToBuffer(&(end[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                    }
+                    
+                    // AVG FIS POINTS
+                    {
+                        //
+                        // TODO: Implement avg fispoints once that has been added to the Database
+                        //
+                        char start[] = "\"avg_fispoints\": \"";
+                        char end[] = "\"";
+                        char no_avg[] = "-";
+
+                        WriteToBuffer(&(start[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        WriteToBuffer(&(no_avg[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                        WriteToBuffer(&(end[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                    }
+
+                    
+                    // END OF OBJECT
+                    char end[] = "}";
+                    WriteToBuffer(&(end[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                   
+                    if (i < number_of_raceids - 1) {
+                        char end2[] = ",\n";
+                        WriteToBuffer(&(end2[0]), PageBuffer, *PageBuffer_size, &PageBuffer_currentByte);
+                    }
+                }
+            }
+            // -------------------------------------------------------------------------------------------------------
+            // Dyncamically creates html elements for all sprint races
+            //
+            // NOTE: THIS IS DEPRECATED! 
+            //       IT IS BETTER TO USE THE JAVASCRIPT ARRAY ABOVE AND CREATE THE HTML ELEMENTS IN THE BROWSER INSTEAD
+            //       THIS WILL ALLOW SORTING AND DYNAMIC CHANGES TO THE UI IN THE FUTURE
+            // -------------------------------------------------------------------------------------------------------
             else if (strcmp(placeholder, "ANALYZED_RACES_SPRINT") == 0)
             {
+                int raceinfo_currentByte = 0;     // Tracks the last visited index inside the buffer in order to speed up the next search
+                int raceresults_currentByte = 0;  // Tracks the last visited index inside the buffer in order to speed up the next search
+                
                 int sprint_race_counter = 0;
                 for (int i = 0; i < number_of_raceids; i++)
                 {
@@ -212,7 +462,7 @@ int CreatePage_Athlete(int fiscode, char** PageBuffer, int* PageBuffer_size)
                     RaceData raceData;
 
                     // Find the race info data for the current raceid
-                    if (GetRaceData_FromRaceInfo(&raceData, raceid, race_info_buffer, race_info_buffer_size) == -1) {
+                    if (GetRaceData_FromRaceInfo(&raceData, raceid, &raceinfo_currentByte, race_info_buffer, race_info_buffer_size) == -1) {
                         fprintf(stderr, "[%ld] Warning: Race skipped while creating Athlete Page: Failed to find race info for race %u in the database\n", (long)getpid(), raceid);
                         continue;   
                     }
@@ -224,7 +474,7 @@ int CreatePage_Athlete(int fiscode, char** PageBuffer, int* PageBuffer_size)
                     sprint_race_counter++;
             
                     // Find the race result data for the current raceid, from the perspective of the given athlete
-                    if (GetRaceData_FromRaceResults(&raceData, raceid, fiscode, race_results_buffer, race_results_buffer_size) == -1) {
+                    if (GetRaceData_FromRaceResults(&raceData, raceid, &raceresults_currentByte, fiscode, race_results_buffer, race_results_buffer_size) == -1) {
                         fprintf(stderr, "[%ld] Warning: Race skipped while creating Athlete Page: Failed to find race results for race %u in the database\n", (long)getpid(), raceid);
                         continue;   
                     }
@@ -419,6 +669,8 @@ int CreatePage_Athlete(int fiscode, char** PageBuffer, int* PageBuffer_size)
  *
  *  raceData: The object that will store the race info data
  *  raceid: The id of the requested race
+ *  start_byte: The position in the buffer the search should start from. 
+ *              This index should be stored from the last time this function was called, in order to speed up the current search 
  *  race_info_buffer: This buffer should contain the full file from the database that contains all the data related to race info
  *  race_info_buffer_size: The size of the buffer
  *
@@ -426,10 +678,9 @@ int CreatePage_Athlete(int fiscode, char** PageBuffer, int* PageBuffer_size)
  *  Returns -1 if the requested race was not found
  * -------------------------------------------------------------------------------------------------------------------------------
  */
-static int GetRaceData_FromRaceInfo(RaceData* raceData, unsigned int raceid, char* race_info_buffer, int race_info_buffer_size)
+static int GetRaceData_FromRaceInfo(RaceData* raceData, unsigned int raceid, int* start_byte, char* race_info_buffer, int race_info_buffer_size)
 {
-    bool found = false;
-    int currentByte = 0;
+    int currentByte = *start_byte;
     while (currentByte < race_info_buffer_size)
     {
         // Make sure it is possible to read the next 4 bytes
@@ -503,11 +754,16 @@ static int GetRaceData_FromRaceInfo(RaceData* raceData, unsigned int raceid, cha
             }
             raceData->type[str_index] = '\0';
 
+            // Skip the last string field
+            while (currentByte < race_info_buffer_size && race_info_buffer[currentByte++] != '\0') {}
+
             // The requested race was found
+            *start_byte = currentByte;
             return 0;
         }
     }
 
+    *start_byte = 0;
     return -1;
 }
 
@@ -520,6 +776,8 @@ static int GetRaceData_FromRaceInfo(RaceData* raceData, unsigned int raceid, cha
  *  raceData: The object that will store the race results data
  *  raceid: The id of the requested race
  *  fiscode: The fiscode of the requested athlete
+ *  start_byte: The position in the buffer the search should start from. 
+ *              This index should be stored from the last time this function was called, in order to speed up the current search 
  *  race_results_buffer: This buffer should contain the full file from the database that contains all the data related to race results
  *  race_results_buffer_size: The size of the buffer
  *
@@ -527,9 +785,9 @@ static int GetRaceData_FromRaceInfo(RaceData* raceData, unsigned int raceid, cha
  *  Returns -1 if the requested race was not found
  * -------------------------------------------------------------------------------------------------------------------------------
  */
-static int GetRaceData_FromRaceResults(RaceData* raceData, unsigned int raceid, unsigned int fiscode, char* race_results_buffer, int race_results_buffer_size)
+static int GetRaceData_FromRaceResults(RaceData* raceData, unsigned int raceid, int* start_byte, unsigned int fiscode, char* race_results_buffer, int race_results_buffer_size)
 {
-    int currentByte = 0;
+    int currentByte = *start_byte;
     while (currentByte < race_results_buffer_size)
     {
         // Make sure the following 6 bytes can be read
@@ -562,11 +820,15 @@ static int GetRaceData_FromRaceResults(RaceData* raceData, unsigned int raceid, 
                 }
             }
         }
+        /*
+         * THIS CODE PATH IS PROBABLY UNNECCESSARY
         else if (numberOfRanks == 0)
         {
             // The requested race was found, but it has no results stored
+            *start_byte = -1;
             return -1;
         }
+        */
         else
         {
             // The requested race was found, so loop through all ranks in the result list
@@ -642,17 +904,48 @@ static int GetRaceData_FromRaceResults(RaceData* raceData, unsigned int raceid, 
                     raceData->rank = rank;
                     raceData->participants = numberOfRanks;
 
+
+                    // Since the parameter "start_byte" is used to keep track of the current byte (in order to speed up the search for the next race)
+                    // We need to finish looping though the result list, so that the byte index points to the start of a new race during the next search
+                    i++;
+                    while (i < numberOfRanks)
+                    {
+                        // If the end of the buffer is reached: set the byte index to 0 so the next search start from the beginning
+                        if (currentByte + 17 >= race_results_buffer_size) {
+                            *start_byte = 0;
+                            return 0;
+                        }
+
+                        // Skip past all the bytes for the current rank
+                        i++;
+                        currentByte += 18;
+                        int stringCounter = 0;
+                        while (stringCounter < 3 && currentByte < race_results_buffer_size) {
+                            if (race_results_buffer[currentByte++] == '\0') {
+                                stringCounter++;
+                            }
+                        }
+                    }
+                    
                     // The requested race and athlete was found, and the data was stored in the RaceData object
+                    *start_byte = currentByte;
                     return 0;
                 }
             }
 
+
             // The requested race was found but not the requested athlete
+            if (currentByte >= race_results_buffer_size) {
+                *start_byte = 0;  // If the end of the buffer is reached: set the byte index to 0 so the next search start from the beginning
+            } else {
+                *start_byte = currentByte;
+            }
             return -1;
         }
     }    
 
     // The requested race was not found
+    *start_byte = 0;
     return -1;
 }
 

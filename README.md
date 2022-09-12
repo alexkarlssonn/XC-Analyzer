@@ -2,8 +2,8 @@
 # XC Analyzer  
   
 ## How to build
-This server is built on a MAC but should work fine on Linux. On Windows, you probably need to change the build file and/or the compiler used.  
-On Mac simple run the shell script to build everything.  
+The program has no dependencies or requiered libraries. Everything needed is inside this repository, and should allow you to build the program. On Mac and Linux, just run the shell script to build everything.  
+This program is intended to run as a Linux server so there is no support for having it build on Windows. You can stil get it to build, but you probably need to do some minor changes to the program.  
   
 ```  
 sh build
@@ -11,55 +11,42 @@ sh build
   
 
 ## About
-Eveything is work in progress so things might be very messy and not very well documented.  
+This is the server for my web application XC-Analyzer.  
+XC-Analyzer is built to present results, athlete information, and statistics for the sport cross country skiing.
+The basic idea is to provide a database for all existing results and athlete information, as well as statistics that can be used to analyze and track any athletes progress.  
   
-The goal of this project is to build a web application that can anlyze the progress of a given athlete.  
-The basic idea is to present data from all FIS competiton the athlete has attended, and present a graph that shows his/hers progress.  
-Some of the data that I want to include is: Difference from winner in time, percentage and rank, as well as a metric that indicate how "competitive" each competition was.  
+The entire program is written in C/C++ and is meant to run on a dedicated machine as an HTTP server.  
+The reason I did is is because I have been very interested in learning how servers and internet architecture works in general. After a while, I decided to build this web app from scratch as a learning experiece.  
   
-Most of this code is currently the backend. I have been very interested in learning how servers and internet architecture works in general, so I decided to build eveything from scratch in C/C++ as a learning experiece. The server will listen on a given socket (80 as default), and all incomming connections will be handled on seperate child processes. Below is a list of the paths and API call that currently exist, but keep in mind that everything is work in progress:  
+When starting the program, the server will listen on a given socket (80 as default), and all incomming connections will be handled on seperate child processes. Once the request has been processed, an http response will be sent back to the client. I have tried to make the server do as much of the work as possible before sending back the requested resources, in order to improve performance. But most of the app is not static html pages, so there is still some javascript that runs in the browser once the resource has been received.  
   
-Paths and API calls:  
- * / (or /index.html)  
- * /test  
- * /admin/index  
- * /api/athlete/fiscode/{FISCODE} 
- * /api/athletes/firstname/{NAME} 
- * /api/athletes/lastname/{NAME} 
- * /api/athletes/fullname/{FIRSTNAME}/{LASTNAME} 
- * /api/raceids/fiscode/{FISCODE}       (Returns a list of all raceids that exist in my DB for the given athlete)  
- * /api/raceinfo/raceid/{RACEID}        (Returns all race information for the given raceid)  
- * /api/raceresults/raceid/{RACEID}     (Returns the list of results for the given raceid)  
- * /api/analyze/qual/fiscode/{FISCODE}  (Analyzes and returns all sprint qualifications for the given athlete)  
- 
-
+The data handling for the server (database) is also written by myself, and the data is stored in my own custom binary format. This was also done as a learning experience, but the idea came about when I realized that the server was way to slow in finding, parsing and sending back the data. I managed to get the server much much faster after restructuring the database, and writing it myself.
+  
 
 
 ## Checklists and todo-lists
-
-VERSION CHECKLIST:  
- * [X] v0.2 - API calls for getting athlete
- * [X] v0.3 - Clean up database
- * [X] v0.4 - API call for getting all resultids for an athlete. API call for result by raceid
- * [X] v0.5 - API calls for getting analyzed results for an athlete
- * [X] v0.6 - Cleanup, convert database to binary format instead of slow JSON format 
- * [X] v0.7 - Write some tests, bugfixes, etc. + Simple frontend that can interact with API calls
-
- * [ ] v1.0 - First proper release! Decent looking frontend. Can look up athletes and analyze his/hers results with decent looking statistics. Can also filter which results to analyze 
   
+ * [ ] Database: Include all races, not just for 2014-2021
+ * [ ] Database: Implement an easy way to update the database with newer races once new results gets added
+ * [ ] Database: Add fispoints and fispoints lists to the database
   
-GENERAL TODOS:  
-[X] Create a controller that maps requested paths to the physical filepaths inside this folder  
-[ ] Remove spaces from search fields before sending request (maybe? think about it some more..)  
-[ ] For all API Calls: On success when they print the success message, they should include the request in that message  
-[ ] Basically what the point above said, but make sure the server prints out relevant, helpfull and accurate messages  
-[ ] When a 404 not found occurs and that specific error page gets sent back, make sure its not sent back with the status code 200 like it is now  
-[ ] Try to remove as much javascript logic as possible from the frontend. As much as possible should be constructed at the backend before sending the resources to the client, since the server is much faster then the browser. And it also reduces unnecessary requests/responses between the client and server.    
+ * [ ] Athlete Page: Implement a graph to show race progress over a season and/or across seasons
+ * [ ] Athlete Page: Make it possible to exclude individual races from the statistics     
+  
+ * [ ] Clean up the code for the API Calls
+ * [ ] Frontend: Make the pages responsive and look good on smaller and mobile devices  
+ * [ ] Homepage: Add more search options. (Search for races, athletes, show top athletes, etc.)    
+ * [ ] Homepage: Add filter options for the results  
+  
+ * Long Term Goals:  
+ * [ ] Athlete Page: Compare athletes against each other  
+ * [ ] Athlete Page: Implement fispoints submenu once fispoints has been added to the database
 
 
 BUGS:  
-[ ] Results are missing the pursuit time  
-[X] Raceids for AnalyzeQual is wrong. They do no match the race they are refering to (FIXED: there was an error in one of the loops in the backend that returns the raceid)  
+ * [ ] Athelte Page, Summary section: When filtering, and no races gets selected, the summary section shows NaN and var large values. Fix this!    
+ * [ ] Results are missing the pursuit time  
+ * [X] Raceids for AnalyzeQual is wrong. They do no match the race they are refering to (FIXED: there was an error in one of the loops in the backend that returns the raceid)  
 
 
   
